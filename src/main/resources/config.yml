@@ -1,0 +1,6 @@
+# Max Item Stack Sizes
+# Format = MATERIAL NAME : STACK SIZE
+
+ITEMS:
+  POTION: 16
+  SPLASH_POTION: 16

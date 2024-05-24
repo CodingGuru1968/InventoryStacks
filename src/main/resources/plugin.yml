@@ -1,0 +1,6 @@
+name: InventoryStacks
+version: 1.0.2
+api-version: 1.13
+main: com.codingguru.inventorystacks.InventoryStacks
+authors: [CodingGuru]
+commands:
