@@ -56,7 +56,7 @@ public class ItemHandler {
 	}
 
 	public void setupLoadedMaterials() {
-		for (String materialName : InventoryStacks.getInstance().getConfig().getConfigurationSection("ITEMS")
+		for (String materialName : InventoryStacks.getInstance().getConfig().getConfigurationSection("items")
 				.getKeys(false)) {
 
 			Optional<XMaterialUtil> foundMaterial = XMaterialUtil.matchXMaterial(materialName);
@@ -69,7 +69,7 @@ public class ItemHandler {
 
 			Material material = foundMaterial.get().parseMaterial();
 
-			int stackSize = InventoryStacks.getInstance().getConfig().getInt("ITEMS." + materialName);
+			int stackSize = InventoryStacks.getInstance().getConfig().getInt("items." + materialName);
 
 			if (stackSize > 127) {
 				stackSize = 127;

@@ -1,6 +1,10 @@
+# General Settings
+
+check-for-updates: true # Check for new plugin updates
+
 # Max Item Stack Sizes
 # Format = MATERIAL NAME : STACK SIZE
 
-ITEMS:
+items:
   POTION: 16
   SPLASH_POTION: 16

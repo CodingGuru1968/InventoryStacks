@@ -7,5 +7,5 @@ public final class ColorUtil {
 				.replaceAll("&k", "\u00A7k").replaceAll("&r", "\u00A7r").replaceAll("&n", "\u00A7n")
 				.replaceAll("&m", "\u00A7m");
 	}
-
+	
 }
