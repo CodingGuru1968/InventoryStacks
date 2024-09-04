@@ -2,8 +2,31 @@
 
 check-for-updates: true # Check for new plugin updates
 
+# Stack command
+# Default Stack Type = HAND / ALL
+# Hand stacks all items player is holding
+# All stacks all the items in the player's inventory
+# Command = /stack or /stack [HAND/ALL]
+
+stack-command:
+  enabled: true
+  defualt-stack-type: 'HAND'
+
+# Disallow stacked items/tools in anvils to be applied
+
+disallow-stacked-anvil-items: true
+  
+# This setting will enable a max amount for ALL items in the game
+
+max-stack-for-all-items:
+  enabled: false # Disabled by default
+  amount: 1
+  whitelist: # This is a whitelist of items that won't be included
+  - DIAMOND_PICKAXE
+
 # Max Item Stack Sizes
 # Format = MATERIAL NAME : STACK SIZE
+# (These list of items will be exempt from max-stack-for-all-items if enabled)
 
 items:
   POTION: 16

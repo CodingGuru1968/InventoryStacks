@@ -1671,8 +1671,12 @@ public enum XMaterialUtil {
      *
      * @since 5.1.0
      */
-    private static final Map<String, XMaterialUtil> NAMES = new HashMap<>();
+    public static final Map<String, XMaterialUtil> NAMES = new HashMap<>();
 
+    public static final Map<String, XMaterialUtil> getNames(){
+    	return NAMES;
+    }
+    
     /**
      * Guava (Google Core Libraries for Java)'s cache for performance and timed caches.
      * For strings that match a certain XMaterialUtil. Mostly cached for configs.

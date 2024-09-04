@@ -1,6 +1,12 @@
 name: InventoryStacks
-version: 1.1
+version: 1.8.2
 api-version: 1.13
 main: com.codingguru.inventorystacks.InventoryStacks
 authors: [CodingGuru]
 commands:
+    stack:
+     description: Stack all items in your inventory.
+    stacks:
+     description: Reload inventory stacks.
+    inventorystacks:
+     description: Reload inventory stacks.
