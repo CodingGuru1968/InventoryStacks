@@ -47,7 +47,7 @@ public class Commands implements Listener {
 
 		XMaterialUtil material = item.get();
 
-		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(material.parseMaterial()))
+		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(material))
 			return;
 
 		if (isDamageable(material.parseMaterial())) {
@@ -98,7 +98,7 @@ public class Commands implements Listener {
 
 		XMaterialUtil material = item.get();
 
-		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(material.parseMaterial()))
+		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(material))
 			return;
 
 		if (isDamageable(material.parseMaterial())) {

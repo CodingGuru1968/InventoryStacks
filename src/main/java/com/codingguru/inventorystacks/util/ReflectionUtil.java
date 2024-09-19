@@ -70,8 +70,9 @@ public final class ReflectionUtil {
 		Object item;
 
 		try {
-			itemField = findItemClassFromName(materialName);
-		} catch (SecurityException e) {
+			itemField = VersionUtil.v1_18_R1.isServerVersionHigher() ? findItemClassFromName(materialName)
+					: ItemHandler.getInstance().getItemsClass().getDeclaredField(materialName.toUpperCase());
+		} catch (SecurityException | NoSuchFieldException e) {
 			e.printStackTrace();
 			ConsoleUtil.warning("Failed to set the max item stack size of: " + materialName + ".");
 			return false;
@@ -172,9 +173,10 @@ public final class ReflectionUtil {
 				continue;
 			}
 
-			Material material = foundMaterial.get().parseMaterial();
+			XMaterialUtil xMaterial = foundMaterial.get();
+			Material material = xMaterial.parseMaterial();
 			int defaultSize = getDefaultStackValue(Material.class, material, "maxStack", name);
-			ItemHandler.getInstance().getCachedMaterialSizes().put(material, defaultSize);
+			ItemHandler.getInstance().getCachedMaterialSizes().put(xMaterial, defaultSize);
 			setClassField(Material.class, material, "maxStack", stackSize, name);
 			setItemField(name, stackSize);
 		}

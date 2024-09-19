@@ -23,7 +23,7 @@ import com.google.common.collect.Maps;
 public class ItemHandler {
 
 	private static final ItemHandler INSTANCE = new ItemHandler();
-	private Map<Material, Integer> cachedMaterials;
+	private Map<XMaterialUtil, Integer> cachedMaterials;
 
 	private boolean isRunningPaper;
 	private VersionUtil serverVersion;
@@ -50,9 +50,10 @@ public class ItemHandler {
 	}
 
 	public void resetMaterialsToDefaultValues() {
-		for (Material mat : cachedMaterials.keySet()) {
-			int defaultAmount = cachedMaterials.get(mat);
-			String name = mat.name();
+		for (XMaterialUtil xMat : cachedMaterials.keySet()) {
+			Material mat = xMat.parseMaterial();
+			int defaultAmount = cachedMaterials.get(xMat);
+			String name = xMat.name();
 			ReflectionUtil.setClassField(Material.class, mat, "maxStack", defaultAmount, name.toLowerCase());
 			ReflectionUtil.setItemField(name.toLowerCase(), defaultAmount);
 		}
@@ -140,19 +141,22 @@ public class ItemHandler {
 				continue;
 			}
 
-			Material material = foundMaterial.get().parseMaterial();
-
+			XMaterialUtil xMaterial = foundMaterial.get();
+			Material material = xMaterial.parseMaterial();
+			
 			if (material == Material.AIR) {
 				ConsoleUtil.warning(
 						"Could not find a valid material with the name: " + materialName + ". Skipping this entry.");
 				continue;
 			}
 
+			
 			int stackSize = materialListRegex.get(materialName);
-			String name = foundMaterial.get().name();
+
+			String name = xMaterial.name();
 			int defaultSize = ReflectionUtil.getDefaultStackValue(Material.class, material, "maxStack",
 					name.toLowerCase());
-			getCachedMaterialSizes().put(material, defaultSize);
+			getCachedMaterialSizes().put(xMaterial, defaultSize);
 			ReflectionUtil.setClassField(Material.class, material, "maxStack", stackSize, name.toLowerCase());
 			ReflectionUtil.setItemField(name.toLowerCase(), stackSize);
 		}
@@ -215,7 +219,7 @@ public class ItemHandler {
 		return stackSize;
 	}
 
-	public Map<Material, Integer> getCachedMaterialSizes() {
+	public Map<XMaterialUtil, Integer> getCachedMaterialSizes() {
 		return cachedMaterials;
 	}
 

@@ -16,6 +16,11 @@ stack-command:
 
 disallow-stacked-anvil-items: true
   
+# Update players inventory after merging stacked items (not required for 1.18+)
+# This makes it look cleaner when items are stacked
+
+update-inventory-on-merge: true
+
 # This setting will enable a max amount for ALL items in the game
 
 max-stack-for-all-items:

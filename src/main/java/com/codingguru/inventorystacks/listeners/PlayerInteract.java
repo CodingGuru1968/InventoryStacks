@@ -1,7 +1,5 @@
 package com.codingguru.inventorystacks.listeners;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.GameMode;
@@ -16,20 +14,50 @@ import org.bukkit.inventory.ItemStack;
 
 import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.util.ItemUtil;
+import com.codingguru.inventorystacks.util.VersionUtil;
+import com.codingguru.inventorystacks.util.XMaterialUtil;
+import com.google.common.collect.Lists;
 
 public class PlayerInteract implements Listener {
 
-	private List<Material> removableMaterials = new ArrayList<>(Arrays
-			.asList(new Material[] { Material.TALL_GRASS, Material.DANDELION, Material.RED_MUSHROOM, Material.ROSE_BUSH,
-					Material.SUNFLOWER, Material.BROWN_MUSHROOM, Material.NETHER_WART, Material.WHEAT, Material.CARROT,
-					Material.POTATO, Material.BEETROOT, Material.WATER, Material.LAVA, Material.AIR }));
+	private final List<XMaterialUtil> removableMaterials;
 
-	@EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+	public PlayerInteract() {
+		removableMaterials = Lists.newArrayList();
+
+		// add basic materials
+		removableMaterials.add(XMaterialUtil.WATER);
+		removableMaterials.add(XMaterialUtil.LAVA);
+		removableMaterials.add(XMaterialUtil.AIR);
+		removableMaterials.add(XMaterialUtil.NETHER_WART);
+		removableMaterials.add(XMaterialUtil.WHEAT);
+		removableMaterials.add(XMaterialUtil.POTATO);
+		removableMaterials.add(XMaterialUtil.CARROT);
+		removableMaterials.add(XMaterialUtil.RED_MUSHROOM);
+		removableMaterials.add(XMaterialUtil.BROWN_MUSHROOM);
+		removableMaterials.add(XMaterialUtil.DANDELION);
+
+		if (VersionUtil.v1_7_R2.isServerVersionHigher()) {
+			removableMaterials.add(XMaterialUtil.SUNFLOWER);
+		}
+
+		if (VersionUtil.v1_8_R1.isServerVersionHigher()) {
+			removableMaterials.add(XMaterialUtil.TALL_GRASS);
+			removableMaterials.add(XMaterialUtil.ROSE_BUSH);
+		}
+
+		if (VersionUtil.v1_9_R1.isServerVersionHigher()) {
+			removableMaterials.add(XMaterialUtil.BEETROOT);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
 	public void onPlayerInteract(PlayerInteractEvent e) {
 		if (e.getItem() == null)
 			return;
 
-		if (e.getItem().getType() != Material.WATER_BUCKET && e.getItem().getType() != Material.LAVA_BUCKET)
+		if (e.getItem().getType() != XMaterialUtil.LAVA_BUCKET.parseMaterial()
+				&& e.getItem().getType() != XMaterialUtil.WATER_BUCKET.parseMaterial())
 			return;
 
 		if (e.getAction() != Action.RIGHT_CLICK_BLOCK)
@@ -41,21 +69,23 @@ public class PlayerInteract implements Listener {
 		if (e.getPlayer().getGameMode() == GameMode.CREATIVE)
 			return;
 
-		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(Material.LAVA_BUCKET)
-				&& !ItemHandler.getInstance().getCachedMaterialSizes().containsKey(Material.WATER_BUCKET))
+		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(XMaterialUtil.LAVA_BUCKET)
+				&& !ItemHandler.getInstance().getCachedMaterialSizes().containsKey(XMaterialUtil.WATER_BUCKET))
 			return;
 
 		e.setCancelled(true);
 
+		XMaterialUtil clickedType = XMaterialUtil.matchXMaterial(e.getClickedBlock().getType());
+
 		Block block;
 
-		if (this.removableMaterials.contains(e.getClickedBlock().getType())) {
+		if (this.removableMaterials.contains(clickedType)) {
 			block = e.getClickedBlock();
 		} else {
 			block = e.getClickedBlock().getRelative(e.getBlockFace());
 		}
 
-		if (!this.removableMaterials.contains(block.getType()))
+		if (!this.removableMaterials.contains(XMaterialUtil.matchXMaterial(block.getType())))
 			return;
 
 		if (e.getItem().getType() == Material.LAVA_BUCKET) {

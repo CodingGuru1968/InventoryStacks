@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 
 import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.util.MessagesUtil;
+import com.codingguru.inventorystacks.util.VersionUtil;
 
 public class StackCmd implements CommandExecutor {
 
@@ -73,8 +74,16 @@ public class StackCmd implements CommandExecutor {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
+	public ItemStack getItemInHand(Player player) {
+		if (!VersionUtil.v1_9_R1.isServerVersionHigher()) {
+			return player.getInventory().getItemInHand();
+		}
+		return player.getInventory().getItemInMainHand();
+	}
+
 	private void stackHand(Player player) {
-		ItemStack item = player.getInventory().getItemInMainHand().clone();
+		ItemStack item = getItemInHand(player).clone();
 		ItemStack[] items = player.getInventory().getContents();
 		int amount = item.getAmount();
 		int maxAmount = item.getType().getMaxStackSize();
@@ -92,10 +101,10 @@ public class StackCmd implements CommandExecutor {
 		}
 
 		if (amount <= maxAmount) {
-			player.getInventory().getItemInMainHand().setAmount(amount);
+			getItemInHand(player).setAmount(amount);
 		} else {
 			item.setAmount(maxAmount);
-			player.getInventory().getItemInMainHand().setAmount(maxAmount);
+			getItemInHand(player).setAmount(maxAmount);
 
 			for (int i = amount - maxAmount; i >= maxAmount; i -= maxAmount) {
 				if (player.getInventory().firstEmpty() != -1) {
