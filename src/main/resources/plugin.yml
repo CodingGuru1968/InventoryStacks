@@ -1,8 +1,9 @@
 name: InventoryStacks
-version: 2.0
+version: 2.4-BETA
 api-version: 1.13
 main: com.codingguru.inventorystacks.InventoryStacks
 authors: [CodingGuru]
+folia-supported: true
 commands:
     stack:
      description: Stack all items in your inventory.

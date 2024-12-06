@@ -2,6 +2,12 @@
 
 check-for-updates: true # Check for new plugin updates
 
+# Use mini messages
+# Allows for clickable links, actions and more.
+# https://www.spigotmc.org/threads/minimessage-rich-text-messages-made-easy.433454/
+
+use-mini-message: false
+
 # Stack command
 # Default Stack Type = HAND / ALL
 # Hand stacks all items player is holding
@@ -10,7 +16,11 @@ check-for-updates: true # Check for new plugin updates
 
 stack-command:
   enabled: true
-  defualt-stack-type: 'HAND'
+  default-stack-type: 'HAND'
+  
+# Only allow items to stack via command (this will disallow merging in inventory)
+
+only-stack-via-command: false
 
 # Disallow stacked items/tools in anvils to be applied
 
@@ -21,7 +31,18 @@ disallow-stacked-anvil-items: true
 
 update-inventory-on-merge: true
 
-# This setting will enable a max amount for ALL items in the game
+# Make brewing stands not be able to stack potions (not required for 1.20.6+)
+# This makes it so brewing stands only allow 1 potion in the potion slot
+
+one-potion-per-slot: true
+
+# Update rate for buckets, drinkable items, and damageable items
+# This is an option because on folia it needs more of a delay to work correctly
+# This is in ticks
+
+item-change-delay: 2
+
+# This setting will enable a max stack amount for ALL items in the game and make them all the same size
 
 max-stack-for-all-items:
   enabled: false # Disabled by default
@@ -31,8 +52,8 @@ max-stack-for-all-items:
 
 # Max Item Stack Sizes
 # Format = MATERIAL NAME : STACK SIZE
-# (These list of items will be exempt from max-stack-for-all-items if enabled)
+# (This list of items will also work with max-stack-for-all-items if enabled)
 
 items:
   POTION: 16
-  SPLASH_POTION: 16
+  # SPLASH_POTION: 16 (This is only in later versions)

@@ -23,7 +23,7 @@ import com.google.common.collect.Lists;
 
 public class Commands implements Listener {
 
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent e) {
 		if (!e.getMessage().startsWith("/give"))
 			return;
@@ -74,7 +74,7 @@ public class Commands implements Listener {
 		}
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void onServerCommand(ServerCommandEvent e) {
 		if (!e.getCommand().startsWith("give"))
 			return;
@@ -156,7 +156,7 @@ public class Commands implements Listener {
 		}
 	}
 
-	boolean isDamageable(Material m) {
+	private boolean isDamageable(Material m) {
 		switch (m) {
 		case DIAMOND_SWORD:
 		case STONE_SWORD:

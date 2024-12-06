@@ -1,9 +1,30 @@
 package com.codingguru.inventorystacks.util;
 
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 public class ItemUtil {
+	
+	public static boolean addItemToBrewingStand(Inventory inventory, ItemStack item) {
+		ItemStack slot1 = inventory.getItem(0);
+		ItemStack slot2 = inventory.getItem(1);
+		ItemStack slot3 = inventory.getItem(2);
+
+		if (slot1 == null || slot1.getType() == Material.AIR) {
+			inventory.setItem(0, item);
+			return true;
+		} else if (slot2 == null || slot2.getType() == Material.AIR) {
+			inventory.setItem(1, item);
+			return true;
+		} else if (slot3 == null || slot3.getType() == Material.AIR) {
+			inventory.setItem(2, item);
+			return true;
+		}
+		
+		return false;
+	}
 
 	public static void addItem(Player player, ItemStack item) {
 		int amount = item.getAmount();

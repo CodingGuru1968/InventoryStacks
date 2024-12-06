@@ -33,7 +33,9 @@ public class StackCmd implements CommandExecutor {
 			}
 
 			String defaultStackType = InventoryStacks.getInstance().getConfig()
-					.getString("stack-command.defualt-stack-type");
+					.isSet("stack-command.defualt-stack-type")
+							? InventoryStacks.getInstance().getConfig().getString("stack-command.defualt-stack-type")
+							: InventoryStacks.getInstance().getConfig().getString("stack-command.default-stack-type");
 
 			StackType stackType = StackType.getStackTypeFromName(defaultStackType);
 
@@ -136,8 +138,8 @@ public class StackCmd implements CommandExecutor {
 			if (item == null || item.getAmount() <= 0)
 				continue;
 
-			int max = item.getMaxStackSize();
-
+			int max = item.getType().getMaxStackSize();
+			
 			if (item.getAmount() < max) {
 				int neededUntilMax = max - item.getAmount();
 				for (int j = i + 1; j < inventorySize; j++) {

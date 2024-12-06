@@ -1923,7 +1923,7 @@ public enum XMaterialUtil {
      * @since 2.0.0
      */
     @Nonnull
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({ "deprecation", "removal" })
     public static XMaterialUtil matchXMaterial(@Nonnull ItemStack item) {
         Objects.requireNonNull(item, "Cannot match null ItemStack");
         String material = item.getType().name();
@@ -2246,7 +2246,6 @@ public enum XMaterialUtil {
      * @see #matchXMaterial(int, byte)
      * @since 2.2.0
      */
-    @SuppressWarnings("deprecation")
     public int getId() {
         // https://hub.spigotmc.org/stash/projects/SPIGOT/repos/bukkit/diff/src/main/java/org/bukkit/Material.java?until=1cb03826ebde4ef887519ce37b0a2a341494a183
         // Should start working again in 1.16+

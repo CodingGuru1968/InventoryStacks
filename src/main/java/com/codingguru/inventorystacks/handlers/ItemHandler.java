@@ -15,6 +15,7 @@ import org.bukkit.Material;
 import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.util.ConsoleUtil;
 import com.codingguru.inventorystacks.util.ReflectionUtil;
+import com.codingguru.inventorystacks.util.ServerTypeUtil;
 import com.codingguru.inventorystacks.util.VersionUtil;
 import com.codingguru.inventorystacks.util.XMaterialUtil;
 import com.google.common.collect.Lists;
@@ -23,10 +24,13 @@ import com.google.common.collect.Maps;
 public class ItemHandler {
 
 	private static final ItemHandler INSTANCE = new ItemHandler();
+
+	private final long itemChangeDelay = InventoryStacks.getInstance().getConfig().getLong("item-change-delay", 2L);
+
 	private Map<XMaterialUtil, Integer> cachedMaterials;
 
-	private boolean isRunningPaper;
 	private VersionUtil serverVersion;
+	private ServerTypeUtil serverType;
 
 	private Class<?> itemClass;
 	private Class<?> itemsClass;
@@ -64,14 +68,20 @@ public class ItemHandler {
 		String packageVersion = Bukkit.getServer().getClass().getPackage().getName();
 		String versionFound = packageVersion.substring(packageVersion.lastIndexOf('.') + 1);
 
-		checkIfRunningPaper();
+		setupServerType();
 
 		if (versionFound.equalsIgnoreCase("craftbukkit")) {
-			if (Bukkit.getBukkitVersion().startsWith("1.21")) {
+			if (Bukkit.getBukkitVersion().startsWith("1.21.3")) {
+				serverVersion = VersionUtil.v1_21_R2;
+				return true;
+			} else if (Bukkit.getBukkitVersion().startsWith("1.21")) {
 				serverVersion = VersionUtil.v1_21_R1;
 				return true;
+			} else if (Bukkit.getBukkitVersion().startsWith("1.20.6")) {
+				serverVersion = VersionUtil.v1_20_R4;
+				return true;
 			} else if (Bukkit.getBukkitVersion().startsWith("1.20")) {
-				serverVersion = VersionUtil.v1_21_R1;
+				serverVersion = VersionUtil.v1_20_R3;
 				return true;
 			}
 			return false;
@@ -87,23 +97,32 @@ public class ItemHandler {
 		return false;
 	}
 
-	public void checkIfRunningPaper() {
+	public void setupServerType() {
 		try {
-			Class.forName("io.papermc.paperclip.Paperclip"); // Main class
-			isRunningPaper = true;
-		} catch (Exception e) {
+			Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
+			serverType = ServerTypeUtil.FOLIA;
+			return;
+		} catch (ClassNotFoundException e) {
 		}
+
+		try {
+			Class.forName("io.papermc.paper.ServerBuildInfo");
+			serverType = ServerTypeUtil.PAPER;
+			return;
+		} catch (ClassNotFoundException e) {
+		}
+
+		serverType = ServerTypeUtil.SPIGOT;
+
 	}
 
 	public void setupReflectionClasses() {
-		String version = ItemHandler.getInstance().getServerVersion().toString();
+		VersionUtil serverVersion = ItemHandler.getInstance().getServerVersion();
 
 		try {
-			itemClass = Class.forName(VersionUtil.v1_17_R1.isServerVersionHigher() ? "net.minecraft.world.item.Item"
-					: ("net.minecraft.server." + version + ".Item"));
-			itemsClass = Class.forName(VersionUtil.v1_17_R1.isServerVersionHigher() ? "net.minecraft.world.item.Items"
-					: ("net.minecraft.server." + version + ".Items"));
-			getItemNameMethod = itemClass.getMethod(VersionUtil.v1_18_R1.isServerVersionHigher() ? "a" : "getName");
+			itemClass = Class.forName(serverVersion.getItemClass());
+			itemsClass = Class.forName(serverVersion.getItemsClass());
+			getItemNameMethod = itemClass.getMethod(serverVersion.getItemNameMethod());
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException e) {
 			e.printStackTrace();
 		}
@@ -111,13 +130,13 @@ public class ItemHandler {
 		if (VersionUtil.v1_20_R4.isServerVersionHigher()) {
 			try {
 				dataComponentsClass = Class.forName("net.minecraft.core.component.DataComponents");
-				maxStackSize = dataComponentsClass.getField(isRunningPaper ? "MAX_STACK_SIZE" : "c").get(null);
-				itemsComponentsField = itemClass.getDeclaredField(isRunningPaper ? "components" : "c");
+				maxStackSize = dataComponentsClass.getField(serverType.getMaxStackField()).get(null);
+				itemsComponentsField = itemClass.getDeclaredField(serverType.getItemComponentsField());
 				itemsComponentsField.setAccessible(true);
 
 				Object itemComponents = itemsComponentsField.get(itemsClass.getFields()[0].get(null));
 
-				componentsMapField = itemComponents.getClass().getDeclaredField(isRunningPaper ? "map" : "c");
+				componentsMapField = itemComponents.getClass().getDeclaredField(serverType.getComponentsMapField());
 				componentsMapField.setAccessible(true);
 				componentMapPutMethod = componentsMapField.getType().getMethod("put",
 						new Class[] { Object.class, Object.class });
@@ -143,14 +162,13 @@ public class ItemHandler {
 
 			XMaterialUtil xMaterial = foundMaterial.get();
 			Material material = xMaterial.parseMaterial();
-			
+
 			if (material == Material.AIR) {
 				ConsoleUtil.warning(
 						"Could not find a valid material with the name: " + materialName + ". Skipping this entry.");
 				continue;
 			}
 
-			
 			int stackSize = materialListRegex.get(materialName);
 
 			String name = xMaterial.name();
@@ -158,7 +176,10 @@ public class ItemHandler {
 					name.toLowerCase());
 			getCachedMaterialSizes().put(xMaterial, defaultSize);
 			ReflectionUtil.setClassField(Material.class, material, "maxStack", stackSize, name.toLowerCase());
-			ReflectionUtil.setItemField(name.toLowerCase(), stackSize);
+
+			if (!InventoryStacks.getInstance().getConfig().getBoolean("only-stack-via-command")) {
+				ReflectionUtil.setItemField(name.toLowerCase(), stackSize);
+			}
 		}
 
 		if (InventoryStacks.getInstance().getConfig().getBoolean("max-stack-for-all-items.enabled")) {
@@ -253,6 +274,14 @@ public class ItemHandler {
 
 	public VersionUtil getServerVersion() {
 		return serverVersion;
+	}
+
+	public ServerTypeUtil getServerType() {
+		return serverType;
+	}
+
+	public long getItemChangeDelay() {
+		return itemChangeDelay;
 	}
 
 	public static ItemHandler getInstance() {

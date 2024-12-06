@@ -5,6 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.ConsoleCommandSender;
 
 import com.codingguru.inventorystacks.InventoryStacks;
+import com.codingguru.inventorystacks.handlers.ItemHandler;
 
 public class ConsoleUtil {
 
@@ -17,6 +18,8 @@ public class ConsoleUtil {
 		CONSOLE.sendMessage(ChatColor.GREEN + "Plugin Version: " + ChatColor.YELLOW
 				+ InventoryStacks.getInstance().getDescription().getVersion());
 		CONSOLE.sendMessage(ChatColor.GREEN + "Server Version: " + ChatColor.YELLOW + Bukkit.getBukkitVersion());
+		CONSOLE.sendMessage(ChatColor.GREEN + "Server Type: " + ChatColor.YELLOW
+				+ ItemHandler.getInstance().getServerType().toString());
 		CONSOLE.sendMessage(ChatColor.GREEN + "Author: " + ChatColor.YELLOW + "CodingGuru");
 		CONSOLE.sendMessage(ChatColor.GREEN + "Discord: " + ChatColor.YELLOW + "https://discord.gg/CbJxH5NPvX");
 		CONSOLE.sendMessage(ChatColor.GREEN + "Updates: " + ChatColor.YELLOW

@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.bukkit.Material;
 
+import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
 
 public final class ReflectionUtil {
@@ -46,7 +47,7 @@ public final class ReflectionUtil {
 			currentField = clas.getDeclaredField(fieldName);
 		} catch (NoSuchFieldException | SecurityException e) {
 			e.printStackTrace();
-			ConsoleUtil.warning("Failed to set the max item stack size of: " + name + ".");
+			ConsoleUtil.warning("Failed to set the max item stack size of: " + name + " (" + clas.getName() + ")");
 			return false;
 		}
 
@@ -56,12 +57,12 @@ public final class ReflectionUtil {
 			currentField.set(instance, Integer.valueOf(value));
 		} catch (IllegalArgumentException | IllegalAccessException e1) {
 			e1.printStackTrace();
-			ConsoleUtil.warning("Failed to set the max item stack size of: " + name + ".");
+			ConsoleUtil.warning("Failed to set the max item stack size of: " + name + " (" + clas.getName() + ")");
 			return false;
 		}
 
 		currentField.setAccessible(false);
-		ConsoleUtil.info("Successfully set class " + name + " stack size to: " + value);
+		ConsoleUtil.info("Successfully set class " + name + " stack size to: " + value + " (" + clas.getName() + ")");
 		return true;
 	}
 
@@ -178,7 +179,10 @@ public final class ReflectionUtil {
 			int defaultSize = getDefaultStackValue(Material.class, material, "maxStack", name);
 			ItemHandler.getInstance().getCachedMaterialSizes().put(xMaterial, defaultSize);
 			setClassField(Material.class, material, "maxStack", stackSize, name);
-			setItemField(name, stackSize);
+
+			if (!InventoryStacks.getInstance().getConfig().getBoolean("only-stack-via-command")) {
+				setItemField(name, stackSize);
+			}
 		}
 	}
 
