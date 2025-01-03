@@ -115,6 +115,9 @@ public class InventoryClick implements Listener {
 
 		ItemStack craftedItem = e.getInventory().getContents()[1];
 
+		if (craftedItem == null)
+			return;
+
 		if (craftedItem.getType() != Material.ENCHANTED_BOOK)
 			return;
 

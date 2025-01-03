@@ -71,7 +71,10 @@ public class ItemHandler {
 		setupServerType();
 
 		if (versionFound.equalsIgnoreCase("craftbukkit")) {
-			if (Bukkit.getBukkitVersion().startsWith("1.21.3")) {
+			if (Bukkit.getBukkitVersion().startsWith("1.21.4")) {
+				serverVersion = VersionUtil.v1_21_R3;
+				return true;
+			} else if (Bukkit.getBukkitVersion().startsWith("1.21.3")) {
 				serverVersion = VersionUtil.v1_21_R2;
 				return true;
 			} else if (Bukkit.getBukkitVersion().startsWith("1.21")) {

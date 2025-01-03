@@ -32,8 +32,10 @@ public class InventoryStacks extends JavaPlugin {
 		boolean setupSuccessful = ItemHandler.getInstance().setupServerVersion();
 
 		if (!setupSuccessful) {
-			ConsoleUtil.warning(
-					"THIS VERSION IS CURRENTLY UNSUPPORTED. PLEASE CONTACT CODINGGURU ON SPIGOT. DISABLING PLUGIN...");
+			String packageVersion = Bukkit.getServer().getClass().getPackage().getName();
+			String versionFound = packageVersion.substring(packageVersion.lastIndexOf('.') + 1);
+			ConsoleUtil.warning("THE VERSION: " + versionFound
+					+ " IS CURRENTLY UNSUPPORTED. PLEASE CONTACT CODINGGURU ON SPIGOT. DISABLING PLUGIN...");
 			Bukkit.getPluginManager().disablePlugin(this);
 			return;
 		}

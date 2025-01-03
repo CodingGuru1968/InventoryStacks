@@ -49,7 +49,8 @@ public enum VersionUtil {
 	v1_20_R4("net.minecraft.world.item.Item", "net.minecraft.world.item.Items", "a", "", 99, 29),
 
 	v1_21_R1("net.minecraft.world.item.Item", "net.minecraft.world.item.Items", "a", "", 99, 30),
-	v1_21_R2("net.minecraft.world.item.Item", "net.minecraft.world.item.Items", "l", "", 99, 31);
+	v1_21_R2("net.minecraft.world.item.Item", "net.minecraft.world.item.Items", "l", "", 99, 31),
+	v1_21_R3("net.minecraft.world.item.Item", "net.minecraft.world.item.Items", "l", "", 99, 32);
 
 	private final String itemClass;
 	private final String itemsClass;
