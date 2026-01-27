@@ -22,6 +22,6 @@ public class FixBrewingStandTask extends Schedule {
 		if (!ItemUtil.addItemToBrewingStand(destination, currentItem))
 			return;
 
-		source.removeItem(currentItem);
+		ItemUtil.removeOneMatching(source, currentItem);
 	}
 }

@@ -2,14 +2,10 @@ package com.codingguru.inventorystacks.handlers;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
 import com.codingguru.inventorystacks.InventoryStacks;
@@ -17,74 +13,68 @@ import com.codingguru.inventorystacks.util.ConsoleUtil;
 import com.codingguru.inventorystacks.util.ReflectionUtil;
 import com.codingguru.inventorystacks.util.ServerTypeUtil;
 import com.codingguru.inventorystacks.util.VersionUtil;
-import com.codingguru.inventorystacks.util.XMaterialUtil;
-import com.google.common.collect.Lists;
+import com.cryptomorin.xseries.XMaterial;
 import com.google.common.collect.Maps;
 
+@SuppressWarnings("deprecation")
 public class ItemHandler {
 
 	private static final ItemHandler INSTANCE = new ItemHandler();
 
-	private final long itemChangeDelay = InventoryStacks.getInstance().getConfig().getLong("item-change-delay", 2L);
-
-	private Map<XMaterialUtil, Integer> cachedMaterials;
+	private final Map<XMaterial, Integer> cachedMaterials = Maps.newHashMap();
 
 	private VersionUtil serverVersion;
 	private ServerTypeUtil serverType;
 
-	private Class<?> itemClass;
-	private Class<?> itemsClass;
-	private Class<?> dataComponentsClass;
+	private Field legacyMaxStackField;
 
-	private Method getItemNameMethod;
-	private Method componentMapPutMethod;
+	private Object maxStackComponentKey;
+	private Method itemComponentsAccessor;
+	private Field itemComponentsField;
 
-	private Field itemsComponentsField;
-	private Field componentsMapField;
+	private Method builderFactory;
+	private Method builderAddAll;
+	private Method builderSet;
+	private Method builderBuild;
 
-	private Object maxStackSize;
-
-	public ItemHandler() {
-		cachedMaterials = Maps.newHashMap();
+	private ItemHandler() {
 	}
 
-	public void reloadInventoryStacks() {
-		resetMaterialsToDefaultValues();
-		setupLoadedMaterials();
+	public static ItemHandler getInstance() {
+		return INSTANCE;
 	}
 
-	public void resetMaterialsToDefaultValues() {
-		for (XMaterialUtil xMat : cachedMaterials.keySet()) {
-			Material mat = xMat.parseMaterial();
-			int defaultAmount = cachedMaterials.get(xMat);
-			String name = xMat.name();
-			ReflectionUtil.setClassField(Material.class, mat, "maxStack", defaultAmount, name.toLowerCase());
-			ReflectionUtil.setItemField(name.toLowerCase(), defaultAmount);
+	public void setup() {
+		if (!setupServerVersion()) {
+			String pkg = Bukkit.getServer().getClass().getPackage().getName();
+			String versionFound = pkg.substring(pkg.lastIndexOf('.') + 1);
+			ConsoleUtil.warning("THE VERSION: " + versionFound + " IS CURRENTLY UNSUPPORTED. DISABLING PLUGIN...");
+			Bukkit.getPluginManager().disablePlugin(InventoryStacks.getInstance());
+			return;
 		}
-		cachedMaterials.clear();
+
+		setupServerType();
+		setupReflection();
 	}
 
 	public boolean setupServerVersion() {
-		String packageVersion = Bukkit.getServer().getClass().getPackage().getName();
-		String versionFound = packageVersion.substring(packageVersion.lastIndexOf('.') + 1);
+		String pkg = Bukkit.getServer().getClass().getPackage().getName();
+		String versionFound = pkg.substring(pkg.lastIndexOf('.') + 1);
 
-		setupServerType();
+		String cleanVersion = Bukkit.getBukkitVersion().split("-")[0];
+		String[] parts = cleanVersion.split("\\.");
+		if (parts.length < 2)
+			return false;
+
+		String majorMinor = parts[0] + "." + parts[1];
 
 		if (versionFound.equalsIgnoreCase("craftbukkit")) {
-			if (Bukkit.getBukkitVersion().startsWith("1.21.4")) {
-				serverVersion = VersionUtil.v1_21_R3;
+			if (majorMinor.equals("1.21")) {
+				serverVersion = VersionUtil.v1_21;
 				return true;
-			} else if (Bukkit.getBukkitVersion().startsWith("1.21.3")) {
-				serverVersion = VersionUtil.v1_21_R2;
-				return true;
-			} else if (Bukkit.getBukkitVersion().startsWith("1.21")) {
-				serverVersion = VersionUtil.v1_21_R1;
-				return true;
-			} else if (Bukkit.getBukkitVersion().startsWith("1.20.6")) {
-				serverVersion = VersionUtil.v1_20_R4;
-				return true;
-			} else if (Bukkit.getBukkitVersion().startsWith("1.20")) {
-				serverVersion = VersionUtil.v1_20_R3;
+			}
+			if (majorMinor.equals("1.20")) {
+				serverVersion = VersionUtil.v1_20;
 				return true;
 			}
 			return false;
@@ -96,183 +86,124 @@ public class ItemHandler {
 				return true;
 			}
 		}
-
 		return false;
 	}
 
-	public void setupServerType() {
+	private void setupServerType() {
 		try {
 			Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
 			serverType = ServerTypeUtil.FOLIA;
 			return;
-		} catch (ClassNotFoundException e) {
+		} catch (ClassNotFoundException ignored) {
 		}
 
 		try {
 			Class.forName("io.papermc.paper.ServerBuildInfo");
 			serverType = ServerTypeUtil.PAPER;
 			return;
-		} catch (ClassNotFoundException e) {
+		} catch (ClassNotFoundException ignored) {
 		}
 
 		serverType = ServerTypeUtil.SPIGOT;
-
 	}
 
-	public void setupReflectionClasses() {
-		VersionUtil serverVersion = ItemHandler.getInstance().getServerVersion();
-
+	private void setupReflection() {
 		try {
-			itemClass = Class.forName(serverVersion.getItemClass());
-			itemsClass = Class.forName(serverVersion.getItemsClass());
-			getItemNameMethod = itemClass.getMethod(serverVersion.getItemNameMethod());
-		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException e) {
-			e.printStackTrace();
-		}
+			Class<?> itemClass = Class.forName(serverVersion.getItemClass());
 
-		if (VersionUtil.v1_20_R4.isServerVersionHigher()) {
+			if (!serverVersion.usesDataComponents()) {
+				legacyMaxStackField = itemClass.getDeclaredField(serverVersion.getLegacyStackField());
+				legacyMaxStackField.setAccessible(true);
+				return;
+			}
+
+			Class<?> dataComponents = Class.forName("net.minecraft.core.component.DataComponents");
+			Field maxStackField;
+
 			try {
-				dataComponentsClass = Class.forName("net.minecraft.core.component.DataComponents");
-				maxStackSize = dataComponentsClass.getField(serverType.getMaxStackField()).get(null);
-				itemsComponentsField = itemClass.getDeclaredField(serverType.getItemComponentsField());
-				itemsComponentsField.setAccessible(true);
-
-				Object itemComponents = itemsComponentsField.get(itemsClass.getFields()[0].get(null));
-
-				componentsMapField = itemComponents.getClass().getDeclaredField(serverType.getComponentsMapField());
-				componentsMapField.setAccessible(true);
-				componentMapPutMethod = componentsMapField.getType().getMethod("put",
-						new Class[] { Object.class, Object.class });
-			} catch (SecurityException | ClassNotFoundException | IllegalArgumentException | IllegalAccessException
-					| NoSuchFieldException | NoSuchMethodException e) {
-				e.printStackTrace();
+				maxStackField = dataComponents.getField("MAX_STACK_SIZE");
+			} catch (NoSuchFieldException e) {
+				maxStackField = dataComponents.getField("c");
 			}
+
+			maxStackComponentKey = maxStackField.get(null);
+
+			itemComponentsAccessor = itemClass.getDeclaredMethod("f");
+			itemComponentsAccessor.setAccessible(true);
+
+			itemComponentsField = itemClass.getDeclaredField("c");
+			itemComponentsField.setAccessible(true);
+
+			Class<?> dataComponentMapClass = Class.forName("net.minecraft.core.component.DataComponentMap");
+			Class<?> builderClass = Class.forName("net.minecraft.core.component.DataComponentMap$a");
+
+			builderFactory = dataComponentMapClass.getDeclaredMethod("a");
+			builderFactory.setAccessible(true);
+
+			builderAddAll = builderClass.getDeclaredMethod("a", dataComponentMapClass);
+			builderAddAll.setAccessible(true);
+
+			Class<?> keyType = Class.forName("net.minecraft.core.component.DataComponentType");
+			builderSet = builderClass.getDeclaredMethod("a", keyType, Object.class);
+			builderSet.setAccessible(true);
+
+			builderBuild = builderClass.getDeclaredMethod("a");
+			builderBuild.setAccessible(true);
+		} catch (Throwable t) {
+			ConsoleUtil.warning(ChatColor.RED + "Unable to setup reflection values. Disabling plugin...");
+			t.printStackTrace();
+			Bukkit.getPluginManager().disablePlugin(InventoryStacks.getInstance());
 		}
 	}
 
-	public void setupLoadedMaterials() {
-		Map<String, Integer> materialListRegex = getFoundMaterialList(Lists.newArrayList(
-				InventoryStacks.getInstance().getConfig().getConfigurationSection("items").getKeys(true)));
-
-		for (String materialName : materialListRegex.keySet()) {
-			Optional<XMaterialUtil> foundMaterial = XMaterialUtil.matchXMaterial(materialName);
-
-			if (!foundMaterial.isPresent()) {
-				ConsoleUtil.warning(
-						"Could not find a valid material with the name: " + materialName + ". Skipping this entry.");
-				continue;
+	public void applyStackSizeToNmsItem(Object nmsItem, int size) {
+		try {
+			if (!serverVersion.usesDataComponents()) {
+				legacyMaxStackField.setInt(nmsItem, size);
+				return;
 			}
 
-			XMaterialUtil xMaterial = foundMaterial.get();
-			Material material = xMaterial.parseMaterial();
+			Object currentMap = itemComponentsAccessor.invoke(nmsItem);
 
-			if (material == Material.AIR) {
-				ConsoleUtil.warning(
-						"Could not find a valid material with the name: " + materialName + ". Skipping this entry.");
-				continue;
-			}
+			Object builder = builderFactory.invoke(null);
+			builderAddAll.invoke(builder, currentMap);
+			builderSet.invoke(builder, maxStackComponentKey, Integer.valueOf(size));
+			Object newMap = builderBuild.invoke(builder);
 
-			int stackSize = materialListRegex.get(materialName);
-
-			String name = xMaterial.name();
-			int defaultSize = ReflectionUtil.getDefaultStackValue(Material.class, material, "maxStack",
-					name.toLowerCase());
-			getCachedMaterialSizes().put(xMaterial, defaultSize);
-			ReflectionUtil.setClassField(Material.class, material, "maxStack", stackSize, name.toLowerCase());
-
-			if (!InventoryStacks.getInstance().getConfig().getBoolean("only-stack-via-command")) {
-				ReflectionUtil.setItemField(name.toLowerCase(), stackSize);
-			}
-		}
-
-		if (InventoryStacks.getInstance().getConfig().getBoolean("max-stack-for-all-items.enabled")) {
-			int stackSize = InventoryStacks.getInstance().getConfig().getInt("max-stack-for-all-items.amount");
-
-			if (stackSize > getServerVersion().getAbsoluteMaxStackSize()) {
-				stackSize = getServerVersion().getAbsoluteMaxStackSize();
-				ConsoleUtil.warning("Could not set stack size over " + getServerVersion().getAbsoluteMaxStackSize()
-						+ ". Defaulting to max value for ALL items.");
-			}
-
-			List<String> configExemptList = InventoryStacks.getInstance().getConfig()
-					.isSet("max-stack-for-all-items.whitelist")
-							? InventoryStacks.getInstance().getConfig()
-									.getStringList("max-stack-for-all-items.whitelist")
-							: InventoryStacks.getInstance().getConfig()
-									.getStringList("max-stack-for-all-items.blacklist");
-
-			List<String> exemptMaterials = configExemptList.stream().map(String::toLowerCase)
-					.collect(Collectors.toList());
-
-			materialListRegex.keySet().forEach(name -> exemptMaterials.add(name.toLowerCase()));
-
-			ReflectionUtil.updateAllItems(exemptMaterials, stackSize);
+			itemComponentsField.set(nmsItem, newMap);
+		} catch (Throwable t) {
+			ConsoleUtil.warning(ChatColor.RED + "Unable to set " + nmsItem.toString() + " stack size to: " + size);
+			t.printStackTrace();
 		}
 	}
 
-	public Map<String, Integer> getFoundMaterialList(List<String> materialNames) {
-		Map<String, Integer> foundTypes = Maps.newHashMap();
-
-		for (String regexPattern : materialNames) {
-			Pattern pattern = Pattern.compile(regexPattern);
-
-			for (XMaterialUtil material : XMaterialUtil.VALUES) {
-				String name = material.name();
-				Matcher m = pattern.matcher(name);
-
-				while (m.find()) {
-					if (m.group().trim().length() > 0) {
-						foundTypes.put(m.group(), getStackSize(regexPattern));
-					}
-				}
-			}
-		}
-
-		return foundTypes;
+	public void cacheMaterial(XMaterial mat, int defaultSize) {
+		cachedMaterials.putIfAbsent(mat, defaultSize);
 	}
 
-	public int getStackSize(String itemPath) {
-		int stackSize = InventoryStacks.getInstance().getConfig().getInt("items." + itemPath);
-
-		if (stackSize > getServerVersion().getAbsoluteMaxStackSize()) {
-			stackSize = getServerVersion().getAbsoluteMaxStackSize();
-			ConsoleUtil.warning("Could not set " + itemPath + " stack size over "
-					+ getServerVersion().getAbsoluteMaxStackSize() + ". Defaulting to max value.");
-		}
-
-		return stackSize;
-	}
-
-	public Map<XMaterialUtil, Integer> getCachedMaterialSizes() {
+	public Map<XMaterial, Integer> getCachedMaterialSizes() {
 		return cachedMaterials;
 	}
 
-	public Object getMaxStackSize() {
-		return maxStackSize;
+	public void reloadInventoryStacks() {
+		resetMaterialsToDefaultValues();
+		cachedMaterials.clear();
+		ReflectionUtil.applyConfiguredStacks();
 	}
 
-	public Field getComponentsMapField() {
-		return componentsMapField;
-	}
+	private void resetMaterialsToDefaultValues() {
+		for (Map.Entry<XMaterial, Integer> entry : cachedMaterials.entrySet()) {
+			Material mat = entry.getKey().get();
 
-	public Field getItemComponentsField() {
-		return itemsComponentsField;
-	}
+			Object nmsItem = ReflectionUtil.hasItemForm(mat);
 
-	public Method getComponentMapPutMethod() {
-		return componentMapPutMethod;
-	}
+			if (nmsItem == null) {
+				continue;
+			}
 
-	public Method getItemNameMethod() {
-		return getItemNameMethod;
-	}
-
-	public Class<?> getItemClass() {
-		return itemClass;
-	}
-
-	public Class<?> getItemsClass() {
-		return itemsClass;
+			int defaultSize = entry.getValue();
+			ReflectionUtil.applyStackSizeToMaterial(nmsItem, mat, defaultSize);
+		}
 	}
 
 	public VersionUtil getServerVersion() {
@@ -281,13 +212,5 @@ public class ItemHandler {
 
 	public ServerTypeUtil getServerType() {
 		return serverType;
-	}
-
-	public long getItemChangeDelay() {
-		return itemChangeDelay;
-	}
-
-	public static ItemHandler getInstance() {
-		return INSTANCE;
 	}
 }

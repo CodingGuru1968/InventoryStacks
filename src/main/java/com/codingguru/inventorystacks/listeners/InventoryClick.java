@@ -5,75 +5,80 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.InventoryType.SlotType;
+import org.bukkit.inventory.BrewerInventory;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.scheduler.InventoryUpdateTask;
-import com.codingguru.inventorystacks.util.InventoryUtil;
 import com.codingguru.inventorystacks.util.ItemUtil;
 import com.codingguru.inventorystacks.util.MessagesUtil;
 import com.codingguru.inventorystacks.util.VersionUtil;
-import com.codingguru.inventorystacks.util.XMaterialUtil;
+import com.cryptomorin.xseries.XMaterial;
 
 public class InventoryClick implements Listener {
 
 	@EventHandler(ignoreCancelled = true)
-	public void onVillagerTradingClick(InventoryClickEvent e) {
-		if (e.getCurrentItem() == null || e.getCurrentItem().getType() == Material.AIR)
-			return;
-
-		if (e.getCurrentItem().getAmount() <= 1)
-			return;
-
-		if (e.getInventory().getType() != InventoryType.MERCHANT)
-			return;
-
-		if (!ItemHandler.getInstance().getCachedMaterialSizes()
-				.containsKey(XMaterialUtil.matchXMaterial(e.getCurrentItem().getType())))
-			return;
-
-		e.setCancelled(true);
-	}
-
-	@EventHandler(ignoreCancelled = true)
-	public void onBrewingStandClick(InventoryClickEvent e) {
-		if (e.getCurrentItem() == null || e.getCurrentItem().getType() == Material.AIR)
-			return;
-
-		if (e.getCurrentItem().getAmount() <= 1)
-			return;
-
-		if (VersionUtil.v1_20_R4.isServerVersionHigher())
-			return;
-
-		if (e.getInventory().getType() != InventoryType.BREWING)
-			return;
-
-		if (e.getClick() != ClickType.SHIFT_LEFT && e.getClick() != ClickType.SHIFT_RIGHT)
-			return;
-
+	public void onBrewingStandShiftMove(InventoryClickEvent e) {
 		if (!InventoryStacks.getInstance().getConfig().getBoolean("one-potion-per-slot"))
 			return;
 
-		if (!ItemHandler.getInstance().getCachedMaterialSizes()
-				.containsKey(XMaterialUtil.matchXMaterial(e.getCurrentItem().getType())))
+		if (!(e.getInventory() instanceof BrewerInventory))
 			return;
 
-		if (e.getSlot() < InventoryUtil.getTopInventory(e).getSize())
+		if (e.getAction() != InventoryAction.MOVE_TO_OTHER_INVENTORY)
 			return;
+
+		if (!(e.getClickedInventory() instanceof PlayerInventory))
+			return;
+
+		ItemStack stack = e.getCurrentItem();
+
+		if (stack == null || stack.getType() == Material.AIR)
+			return;
+
+		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(XMaterial.matchXMaterial(stack.getType())))
+			return;
+
+		Inventory brewingInv = e.getInventory();
+
+		int empty = firstEmptyBottleSlot(brewingInv);
+
+		if (empty == -1) {
+			e.setCancelled(true);
+			return;
+		}
 
 		e.setCancelled(true);
 
-		ItemStack newItem = e.getCurrentItem().clone();
-		newItem.setAmount(1);
+		ItemStack one = stack.clone();
+		one.setAmount(1);
+		brewingInv.setItem(empty, one);
 
-		if (ItemUtil.addItemToBrewingStand(e.getInventory(), newItem)) {
-			e.getCurrentItem().setAmount(e.getCurrentItem().getAmount() - 1);
+		int newAmount = stack.getAmount() - 1;
+
+		if (newAmount <= 0) {
+			e.setCurrentItem(null);
+		} else {
+			stack.setAmount(newAmount);
+			e.setCurrentItem(stack);
 		}
+	}
+
+	private int firstEmptyBottleSlot(Inventory brewing) {
+		for (int i = 0; i < 3; i++) {
+			ItemStack it = brewing.getItem(i);
+			if (it == null || it.getType() == Material.AIR)
+				return i;
+		}
+		return -1;
 	}
 
 	@EventHandler(ignoreCancelled = true)
@@ -92,7 +97,7 @@ public class InventoryClick implements Listener {
 			return;
 
 		if (!ItemHandler.getInstance().getCachedMaterialSizes()
-				.containsKey(XMaterialUtil.matchXMaterial(e.getCurrentItem().getType())))
+				.containsKey(XMaterial.matchXMaterial(e.getCurrentItem().getType())))
 			return;
 
 		InventoryUpdateTask updateInventoryTask = new InventoryUpdateTask((Player) e.getWhoClicked());
@@ -110,7 +115,7 @@ public class InventoryClick implements Listener {
 		if (e.getSlotType() != SlotType.RESULT)
 			return;
 
-		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(XMaterialUtil.ENCHANTED_BOOK))
+		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(XMaterial.ENCHANTED_BOOK))
 			return;
 
 		ItemStack craftedItem = e.getInventory().getContents()[1];
@@ -148,7 +153,7 @@ public class InventoryClick implements Listener {
 		if (craftedItem.getAmount() <= 1)
 			return;
 
-		XMaterialUtil xMaterial = XMaterialUtil.matchXMaterial(craftedItem.getType());
+		XMaterial xMaterial = XMaterial.matchXMaterial(craftedItem.getType());
 
 		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(xMaterial))
 			return;
@@ -156,5 +161,85 @@ public class InventoryClick implements Listener {
 		e.getWhoClicked().closeInventory();
 		e.setCancelled(true);
 		MessagesUtil.sendMessage(e.getWhoClicked(), MessagesUtil.DISALLOW_ANVIL_STACK.toString());
+	}
+
+	@SuppressWarnings("deprecation")
+	@EventHandler(ignoreCancelled = true)
+	public void onPreventDurabilityDowngradeShiftMerge(InventoryClickEvent e) {
+		if (VersionUtil.v1_17_R1.isServerVersionHigher())
+			return;
+
+		if (!InventoryStacks.getInstance().getConfig().getBoolean("prevent-shift-damageable-items-stack"))
+			return;
+
+		if (!e.isShiftClick())
+			return;
+
+		ItemStack moving = e.getCurrentItem();
+
+		if (moving == null || moving.getType() == Material.AIR)
+			return;
+
+		Material type = moving.getType();
+
+		if (type.getMaxDurability() <= 0)
+			return;
+		if (moving.getAmount() <= 1)
+			return;
+
+		if (moving.getDurability() != 0)
+			return;
+
+		Inventory playerInv = e.getWhoClicked().getInventory();
+		Inventory clickedInv = e.getInventory();
+
+		if (hasDamagedMergeTarget(playerInv, moving)
+				|| (clickedInv != null && clickedInv != playerInv && hasDamagedMergeTarget(clickedInv, moving))) {
+			e.setCancelled(true);
+			MessagesUtil.sendMessage(e.getWhoClicked(),
+					MessagesUtil.PREVENT_SHIFT_COMBINING_DAMAGEABLE_ITEMS.toString());
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	private boolean hasDamagedMergeTarget(Inventory inv, ItemStack moving) {
+		Material type = moving.getType();
+
+		for (ItemStack it : inv.getContents()) {
+			if (it == null || it.getType() != type)
+				continue;
+
+			if (it.getDurability() == 0)
+				continue;
+
+			if (!sameMetaIgnoringDurability(moving, it))
+				continue;
+
+			return true;
+		}
+		return false;
+	}
+
+	@SuppressWarnings("deprecation")
+	private boolean sameMetaIgnoringDurability(ItemStack a, ItemStack b) {
+		ItemMeta am = a.getItemMeta();
+		ItemMeta bm = b.getItemMeta();
+
+		if (am == null && bm == null)
+			return true;
+		if (am == null || bm == null)
+			return false;
+
+		if (am.hasDisplayName() != bm.hasDisplayName())
+			return false;
+		if (am.hasDisplayName() && !am.getDisplayName().equals(bm.getDisplayName()))
+			return false;
+
+		if (am.hasLore() != bm.hasLore())
+			return false;
+		if (am.hasLore() && !am.getLore().equals(bm.getLore()))
+			return false;
+
+		return am.getEnchants().equals(bm.getEnchants());
 	}
 }

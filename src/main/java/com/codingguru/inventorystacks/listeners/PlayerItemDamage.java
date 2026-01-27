@@ -8,16 +8,16 @@ import org.bukkit.inventory.ItemStack;
 
 import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.scheduler.DamageItemTask;
-import com.codingguru.inventorystacks.util.XMaterialUtil;
+import com.cryptomorin.xseries.XMaterial;
 
 public class PlayerItemDamage implements Listener {
 
 	private final long itemChangeDelay;
-	
+
 	public PlayerItemDamage(long itemChangeDelay) {
 		this.itemChangeDelay = itemChangeDelay;
 	}
-	
+
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
 	public void onPlayerItemDamage(PlayerItemDamageEvent e) {
 		int originalAmount = e.getItem().getAmount();
@@ -25,7 +25,7 @@ public class PlayerItemDamage implements Listener {
 		if (originalAmount <= 1)
 			return;
 
-		XMaterialUtil xMat = XMaterialUtil.matchXMaterial(e.getItem().getType());
+		XMaterial xMat = XMaterial.matchXMaterial(e.getItem().getType());
 
 		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(xMat))
 			return;

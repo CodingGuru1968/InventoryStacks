@@ -1,203 +1,223 @@
 package com.codingguru.inventorystacks.util;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
 import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
+import com.cryptomorin.xseries.XMaterial;
 
+@SuppressWarnings("deprecation")
 public final class ReflectionUtil {
 
-	public static int getDefaultStackValue(Class<?> clas, Material mat, String fieldName, String name) {
-		int defaultSize = 1; // More safe than using 64 as could be tools, armour, etc
+	private final static VersionUtil SERVER_VERSION = ItemHandler.getInstance().getServerVersion();
+	private final static InventoryStacks PLUGIN = InventoryStacks.getInstance();
 
-		Field currentField;
-
-		try {
-			currentField = clas.getDeclaredField(fieldName);
-		} catch (NoSuchFieldException | SecurityException e) {
-			e.printStackTrace();
-			ConsoleUtil.warning("Failed to retreive the max item stack size of: " + name + ".");
-			return defaultSize;
-		}
-
-		currentField.setAccessible(true);
-
-		try {
-			defaultSize = currentField.getInt(mat);
-		} catch (IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
-			ConsoleUtil.warning("Failed to retreive the max item stack size of: " + name + ".");
-			defaultSize = 1;
-			return defaultSize;
-		}
-
-		currentField.setAccessible(false);
-
-		return defaultSize;
+	private ReflectionUtil() {
 	}
 
-	public static boolean setClassField(Class<?> clas, Object instance, String fieldName, int value, String name) {
-		Field currentField;
+	public static void applyStackSizeToMaterial(Object nmsItem, Material material, int size) {
 		try {
-			currentField = clas.getDeclaredField(fieldName);
-		} catch (NoSuchFieldException | SecurityException e) {
-			e.printStackTrace();
-			ConsoleUtil.warning("Failed to set the max item stack size of: " + name + " (" + clas.getName() + ")");
-			return false;
+			if (nmsItem == null) {
+				ConsoleUtil.info(ChatColor.GRAY + "Skipping " + material.name() + " (no item form)");
+				return;
+			}
+
+			ItemHandler.getInstance().applyStackSizeToNmsItem(nmsItem, size);
+			ConsoleUtil.info(ChatColor.YELLOW + "Successfully set " + material.name() + " stack size to: " + size);
+
+			if (VersionUtil.v1_21.isServerVersionHigher()) // DON'T SET BUKKIT MAX STACK
+				return;
+
+			setClassField(Material.class, material, "maxStack", size, material.name());
+		} catch (Throwable t) {
+			ConsoleUtil.warning(ChatColor.RED + "Unable to set " + material.name() + " stack size to: " + size);
+			t.printStackTrace();
 		}
-
-		currentField.setAccessible(true);
-
-		try {
-			currentField.set(instance, Integer.valueOf(value));
-		} catch (IllegalArgumentException | IllegalAccessException e1) {
-			e1.printStackTrace();
-			ConsoleUtil.warning("Failed to set the max item stack size of: " + name + " (" + clas.getName() + ")");
-			return false;
-		}
-
-		currentField.setAccessible(false);
-		ConsoleUtil.info("Successfully set class " + name + " stack size to: " + value + " (" + clas.getName() + ")");
-		return true;
 	}
 
-	public static boolean setItemField(String materialName, int stack) {
-		Field itemField;
-		Object item;
+	public static void applyConfiguredStacks() {
+		Map<String, Integer> resolvedStacks = new HashMap<String, Integer>();
 
-		try {
-			itemField = VersionUtil.v1_18_R1.isServerVersionHigher() ? findItemClassFromName(materialName)
-					: ItemHandler.getInstance().getItemsClass().getDeclaredField(materialName.toUpperCase());
-		} catch (SecurityException | NoSuchFieldException e) {
-			e.printStackTrace();
-			ConsoleUtil.warning("Failed to set the max item stack size of: " + materialName + ".");
-			return false;
+		if (PLUGIN.getConfig().isSet("items")) {
+			resolvedStacks = resolveConfiguredItems(PLUGIN.getConfig().getConfigurationSection("items").getKeys(true));
+
+			for (Map.Entry<String, Integer> e : resolvedStacks.entrySet()) {
+				String matName = e.getKey();
+				int size = e.getValue();
+
+				XMaterial xMat = XMaterial.matchXMaterial(matName).orElse(null);
+
+				if (xMat == null) {
+					ConsoleUtil.warning(ChatColor.RED + "The Item: " + matName
+							+ " does not exist. Check MATERIAL_LIST.txt for all up to date item names.");
+					continue;
+				}
+
+				Material mat = xMat.get();
+
+				if (mat == null) {
+					continue;
+				}
+
+				Object nmsItem = hasItemForm(mat);
+
+				if (nmsItem == null) {
+					continue;
+				}
+
+				ItemHandler.getInstance().cacheMaterial(xMat, mat.getMaxStackSize());
+				applyStackSizeToMaterial(nmsItem, mat, size);
+			}
 		}
 
-		try {
-			item = itemField.get(null);
-		} catch (IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
-			ConsoleUtil.warning("Failed to set the max item stack size of: " + materialName + ".");
-			return false;
-		}
+		if (PLUGIN.getConfig().getBoolean("max-stack-for-all-items.enabled")) {
+			int stackSize = validateStackSize(PLUGIN.getConfig().getInt("max-stack-for-all-items.amount"), "ALL");
 
-		if (VersionUtil.v1_20_R4.isServerVersionHigher()) {
-			return setComponentField(item, materialName, stack);
-		}
+			List<String> configExemptList = PLUGIN.getConfig().getStringList("max-stack-for-all-items.whitelist");
 
-		return setClassField(ItemHandler.getInstance().getItemClass(), item,
-				ItemHandler.getInstance().getServerVersion().getFieldName(), stack, materialName);
+			Set<String> exemptMaterials = configExemptList.stream().filter(Objects::nonNull).map(s -> s.toUpperCase())
+					.collect(Collectors.toSet());
+
+			resolvedStacks.keySet().forEach(name -> exemptMaterials.add(name.toUpperCase()));
+
+			updateAllItems(exemptMaterials, stackSize);
+		}
 	}
 
-	private static Field findItemClassFromName(String materialName) {
-		for (Field field : ItemHandler.getInstance().getItemsClass().getFields()) {
-			Object found;
+	private static Map<String, Integer> resolveConfiguredItems(Collection<String> keys) {
+		Map<String, Integer> resolved = new HashMap<>();
+		XMaterial[] allMaterials = XMaterial.VALUES;
+
+		for (String key : keys) {
+			if (key == null)
+				continue;
+
+			if (key.isEmpty())
+				continue;
+
+			if (!PLUGIN.getConfig().isInt("items." + key))
+				continue;
+
+			int stackSize = validateStackSize(PLUGIN.getConfig().getInt("items." + key), key);
+
+			final Pattern pattern;
 
 			try {
-				found = field.get(null);
-			} catch (IllegalArgumentException | IllegalAccessException e1) {
-				e1.printStackTrace();
+				pattern = Pattern.compile(key, Pattern.CASE_INSENSITIVE);
+			} catch (PatternSyntaxException ex) {
+				ConsoleUtil.warning(ChatColor.RED + "Invalid regex in items: '" + key + "': " + ex.getDescription());
 				continue;
 			}
 
-			if (found == null)
-				continue;
+			for (XMaterial material : allMaterials) {
+				String name = material.name();
 
-			String name;
-
-			try {
-				name = (String) ItemHandler.getInstance().getItemNameMethod().invoke(found);
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
-					| ClassCastException e) {
-				e.printStackTrace();
-				continue;
-			}
-
-			String[] split = name.split("\\.");
-
-			name = split[split.length - 1];
-
-			if (name.equals(materialName)) {
-				return field;
+				if (pattern.matcher(name).matches()) {
+					resolved.putIfAbsent(name.toUpperCase(), stackSize);
+				}
 			}
 		}
-		return null;
+
+		return resolved;
 	}
 
-	public static void updateAllItems(List<String> exemptMaterials, int stackSize) {
-		for (Field field : ItemHandler.getInstance().getItemsClass().getFields()) {
-			Object found;
+	private static void updateAllItems(Set<String> exemptMaterials, int stackSize) {
+		Set<Material> processed = new HashSet<>();
 
-			try {
-				found = field.get(null);
-			} catch (IllegalArgumentException | IllegalAccessException e1) {
-				e1.printStackTrace();
-				continue;
-			}
-
-			if (found == null)
+		for (XMaterial xMat : XMaterial.VALUES) {
+			if (!xMat.isSupported())
 				continue;
 
-			String name;
+			Material mat = xMat.get();
 
-			try {
-				name = (String) ItemHandler.getInstance().getItemNameMethod().invoke(found);
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
-					| ClassCastException e) {
-				e.printStackTrace();
-				continue;
-			}
-
-			String[] split = name.split("\\.");
-
-			name = split[split.length - 1];
-
-			if (name.equalsIgnoreCase("air"))
+			if (mat == null)
 				continue;
 
-			if (exemptMaterials.contains(name)) {
-				ConsoleUtil.info("Material: " + name + " is whitelisted. Skipping this entry.");
+			if (exemptMaterials.contains(mat.name().toUpperCase())
+					|| exemptMaterials.contains(xMat.name().toUpperCase()))
 				continue;
-			}
 
-			Optional<XMaterialUtil> foundMaterial = XMaterialUtil.matchXMaterial(name);
-
-			if (!foundMaterial.isPresent()) {
-				ConsoleUtil
-						.warning("Could not find a valid material with the name: " + name + ". Skipping this entry.");
+			if (!processed.add(mat))
 				continue;
-			}
 
-			XMaterialUtil xMaterial = foundMaterial.get();
-			Material material = xMaterial.parseMaterial();
-			int defaultSize = getDefaultStackValue(Material.class, material, "maxStack", name);
-			ItemHandler.getInstance().getCachedMaterialSizes().put(xMaterial, defaultSize);
-			setClassField(Material.class, material, "maxStack", stackSize, name);
+			Object nmsItem = hasItemForm(mat);
 
-			if (!InventoryStacks.getInstance().getConfig().getBoolean("only-stack-via-command")) {
-				setItemField(name, stackSize);
-			}
+			if (nmsItem == null)
+				continue;
+
+			ItemHandler.getInstance().cacheMaterial(xMat, mat.getMaxStackSize());
+			applyStackSizeToMaterial(nmsItem, mat, stackSize);
 		}
 	}
 
-	public static boolean setComponentField(Object item, String materialName, int stack) {
+	public static Object hasItemForm(Material mat) {
 		try {
-			Object components = ItemHandler.getInstance().getItemComponentsField().get(item);
-			ItemHandler.getInstance().getComponentMapPutMethod().invoke(
-					ItemHandler.getInstance().getComponentsMapField().get(components),
-					new Object[] { ItemHandler.getInstance().getMaxStackSize(), Integer.valueOf(stack) });
-		} catch (IllegalArgumentException | IllegalAccessException | SecurityException | InvocationTargetException e) {
-			e.printStackTrace();
-			ConsoleUtil.warning("Failed to set the max item stack size of: " + materialName + ".");
+			return getNMSItem(mat);
+		} catch (Throwable t) {
+			return null;
+		}
+	}
+
+	private static Object getNMSItem(Material material) throws Exception {
+		String cbPkg = Bukkit.getServer().getClass().getPackage().getName();
+		String base = cbPkg.startsWith("org.bukkit.craftbukkit") ? cbPkg : "org.bukkit.craftbukkit";
+
+		Class<?> craftMagicNumbers;
+		try {
+			craftMagicNumbers = Class.forName(base + ".util.CraftMagicNumbers");
+		} catch (ClassNotFoundException ex) {
+			craftMagicNumbers = Class.forName("org.bukkit.craftbukkit.util.CraftMagicNumbers");
+		}
+
+		Method getItem = craftMagicNumbers.getMethod("getItem", Material.class);
+		return getItem.invoke(null, material);
+	}
+
+	private static boolean setClassField(Class<?> clazz, Object instance, String fieldName, int value, String name) {
+		try {
+			Field field = clazz.getDeclaredField(fieldName);
+			field.setAccessible(true);
+			field.setInt(instance, value);
+
+			ConsoleUtil.info("Successfully set Bukkit Material " + name + " max stack to: " + value);
+			return true;
+		} catch (Throwable t) {
+			ConsoleUtil.warning("Failed to set Bukkit Material max stack of: " + name);
+			t.printStackTrace();
 			return false;
 		}
-		ConsoleUtil.info("Successfully set component " + materialName + " stack size to: " + stack);
-		return true;
+	}
+
+	private static int validateStackSize(int stackSize, String itemName) {
+		int absoluteMaxStackSize = SERVER_VERSION.getAbsoluteMaxStackSize();
+
+		if (stackSize > absoluteMaxStackSize) {
+			ConsoleUtil.warning("Stack size: " + stackSize + " can not be set for " + itemName + " item(s) over "
+					+ absoluteMaxStackSize + ". Defaulting to max value...");
+			return absoluteMaxStackSize;
+		}
+
+		if (stackSize < 1) {
+			ConsoleUtil.warning(ChatColor.RED + "Unable to set stack size to: " + stackSize + " for " + itemName
+					+ " item(s). Defaulting to 1...");
+			stackSize = 1;
+		}
+
+		return stackSize;
 	}
 }

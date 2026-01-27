@@ -1,11 +1,11 @@
 package com.codingguru.inventorystacks;
 
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.codingguru.inventorystacks.commands.ReloadCmd;
 import com.codingguru.inventorystacks.commands.StackCmd;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
+import com.codingguru.inventorystacks.listeners.BlockDispense;
 import com.codingguru.inventorystacks.listeners.BlockPlace;
 import com.codingguru.inventorystacks.listeners.Commands;
 import com.codingguru.inventorystacks.listeners.FurnaceBurn;
@@ -17,6 +17,7 @@ import com.codingguru.inventorystacks.listeners.PlayerItemConsume;
 import com.codingguru.inventorystacks.listeners.PlayerItemDamage;
 import com.codingguru.inventorystacks.managers.SettingsManager;
 import com.codingguru.inventorystacks.util.ConsoleUtil;
+import com.codingguru.inventorystacks.util.ReflectionUtil;
 
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 
@@ -29,16 +30,7 @@ public class InventoryStacks extends JavaPlugin {
 	public void onEnable() {
 		INSTANCE = this;
 
-		boolean setupSuccessful = ItemHandler.getInstance().setupServerVersion();
-
-		if (!setupSuccessful) {
-			String packageVersion = Bukkit.getServer().getClass().getPackage().getName();
-			String versionFound = packageVersion.substring(packageVersion.lastIndexOf('.') + 1);
-			ConsoleUtil.warning("THE VERSION: " + versionFound
-					+ " IS CURRENTLY UNSUPPORTED. PLEASE CONTACT CODINGGURU ON SPIGOT. DISABLING PLUGIN...");
-			Bukkit.getPluginManager().disablePlugin(this);
-			return;
-		}
+		ItemHandler.getInstance().setup();
 
 		saveDefaultConfig();
 
@@ -60,6 +52,7 @@ public class InventoryStacks extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(new InventoryMoveItem(), this);
 		getServer().getPluginManager().registerEvents(new FurnaceBurn(), this);
 		getServer().getPluginManager().registerEvents(new PlayerInteract(), this);
+		getServer().getPluginManager().registerEvents(new BlockDispense(), this);
 
 		settingsManager = new SettingsManager();
 		settingsManager.setup(this);
@@ -68,9 +61,8 @@ public class InventoryStacks extends JavaPlugin {
 			this.adventureAPI = BukkitAudiences.create(this);
 		}
 
-		ItemHandler.getInstance().setupReflectionClasses();
-		ItemHandler.getInstance().setupLoadedMaterials();
-
+	    ReflectionUtil.applyConfiguredStacks();
+	    
 		ConsoleUtil.sendPluginEndSetup();
 	}
 

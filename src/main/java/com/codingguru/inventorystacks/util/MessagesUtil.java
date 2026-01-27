@@ -16,6 +16,7 @@ public enum MessagesUtil {
 	ALL_ITEMS_STACKED("&aYou have successfully stacked all items in your inventory.", true),
 	INVALID_STACK_TYPE("&c%type% is not a valid stack type. Use 'HAND' or 'ALL'.", true),
 	DISALLOW_ANVIL_STACK("&cYou cannot use multiple stacked items in an anvil.", true),
+	PREVENT_SHIFT_COMBINING_DAMAGEABLE_ITEMS("&cYou cannot combine this item WITH SHIFT due to a durability item glitch.", true),
 	COMMAND_DISABLED("&cThis command has been disabled.", false),
 	RELOAD("&aYou have successfully reloaded all configuration files.", true),
 	INCORRECT_USAGE("&cCorrect Usage: %command%", true),

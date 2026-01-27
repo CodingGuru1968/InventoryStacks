@@ -9,19 +9,19 @@ import org.bukkit.inventory.ItemStack;
 import com.codingguru.inventorystacks.scheduler.ChangeItemInHandWithItemTask;
 import com.codingguru.inventorystacks.util.ItemUtil;
 import com.codingguru.inventorystacks.util.VersionUtil;
-import com.codingguru.inventorystacks.util.XMaterialUtil;
+import com.cryptomorin.xseries.XMaterial;
 
 public class PlayerItemConsume implements Listener {
 
 	private final long itemChangeDelay;
-	
+
 	public PlayerItemConsume(long itemChangeDelay) {
 		this.itemChangeDelay = itemChangeDelay;
 	}
-	
+
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
 	public void onPlayerItemConsume(PlayerItemConsumeEvent e) {
-		if (VersionUtil.v1_21_R1.isServerVersionHigher())
+		if (VersionUtil.v1_21.isServerVersionHigher())
 			return;
 
 		if (e.getItem() == null)
@@ -30,22 +30,22 @@ public class PlayerItemConsume implements Listener {
 		if (e.getItem().getAmount() <= 1)
 			return;
 
-		if (e.getItem().getType() == XMaterialUtil.MILK_BUCKET.parseMaterial()) {
-			ItemUtil.addItem(e.getPlayer(), new ItemStack(XMaterialUtil.BUCKET.parseMaterial()));
+		if (e.getItem().getType() == XMaterial.MILK_BUCKET.get()) {
+			ItemUtil.addItem(e.getPlayer(), new ItemStack(XMaterial.BUCKET.get()));
 			return;
 		}
 
-		if (e.getItem().getType() != XMaterialUtil.RABBIT_STEW.parseMaterial()
-				&& e.getItem().getType() != XMaterialUtil.SUSPICIOUS_STEW.parseMaterial()
-				&& e.getItem().getType() != XMaterialUtil.MUSHROOM_STEW.parseMaterial()
-				&& e.getItem().getType() != XMaterialUtil.BEETROOT_SOUP.parseMaterial())
+		if (e.getItem().getType() != XMaterial.RABBIT_STEW.get()
+				&& e.getItem().getType() != XMaterial.SUSPICIOUS_STEW.get()
+				&& e.getItem().getType() != XMaterial.MUSHROOM_STEW.get()
+				&& e.getItem().getType() != XMaterial.BEETROOT_SOUP.get())
 			return;
 
 		ItemStack clone = e.getItem().clone();
 		clone.setAmount(e.getItem().getAmount() - 1);
 
 		ChangeItemInHandWithItemTask changeItemTask = new ChangeItemInHandWithItemTask(e.getPlayer(), clone,
-				new ItemStack(XMaterialUtil.BOWL.parseMaterial()), XMaterialUtil.BOWL.parseMaterial());
+				new ItemStack(XMaterial.BOWL.get()), XMaterial.BOWL.get());
 		changeItemTask.runTaskLater(itemChangeDelay);
 	}
 

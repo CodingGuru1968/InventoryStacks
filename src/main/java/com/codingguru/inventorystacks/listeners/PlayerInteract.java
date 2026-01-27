@@ -10,22 +10,22 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.codingguru.inventorystacks.util.VersionUtil;
-import com.codingguru.inventorystacks.util.XMaterialUtil;
+import com.cryptomorin.xseries.XMaterial;
 
 public class PlayerInteract implements Listener {
 
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
 	public void onPlayerInteract(PlayerInteractEvent e) {
-		if (VersionUtil.v1_20_R4.isServerVersionHigher())
+		if (VersionUtil.v1_20.isServerVersionHigher())
 			return;
 
 		if (e.getAction() != Action.RIGHT_CLICK_BLOCK)
 			return;
 
-		if (e.getClickedBlock().getType() != XMaterialUtil.JUKEBOX.parseMaterial())
+		if (e.getClickedBlock().getType() != XMaterial.JUKEBOX.get())
 			return;
 
-		if (e.getItem() == null || e.getItem().getType() == XMaterialUtil.AIR.parseMaterial())
+		if (e.getItem() == null || e.getItem().getType() == XMaterial.AIR.get())
 			return;
 
 		ItemStack holding = e.getItem();
@@ -40,7 +40,7 @@ public class PlayerInteract implements Listener {
 
 		Jukebox jukebox = (Jukebox) e.getClickedBlock().getState();
 
-		if (jukebox.hasRecord())
+		if (jukebox.hasRecord())	
 			return;
 
 		e.setCancelled(true);
@@ -52,21 +52,13 @@ public class PlayerInteract implements Listener {
 	}
 
 	private boolean isMusicDisc(Material type) {
-		return type == XMaterialUtil.MUSIC_DISC_11.parseMaterial()
-				|| type == XMaterialUtil.MUSIC_DISC_13.parseMaterial()
-				|| type == XMaterialUtil.MUSIC_DISC_5.parseMaterial()
-				|| type == XMaterialUtil.MUSIC_DISC_BLOCKS.parseMaterial()
-				|| type == XMaterialUtil.MUSIC_DISC_CAT.parseMaterial()
-				|| type == XMaterialUtil.MUSIC_DISC_CHIRP.parseMaterial()
-				|| type == XMaterialUtil.MUSIC_DISC_FAR.parseMaterial()
-				|| type == XMaterialUtil.MUSIC_DISC_MALL.parseMaterial()
-				|| type == XMaterialUtil.MUSIC_DISC_MELLOHI.parseMaterial()
-				|| type == XMaterialUtil.MUSIC_DISC_OTHERSIDE.parseMaterial()
-				|| type == XMaterialUtil.MUSIC_DISC_PIGSTEP.parseMaterial()
-				|| type == XMaterialUtil.MUSIC_DISC_RELIC.parseMaterial()
-				|| type == XMaterialUtil.MUSIC_DISC_STAL.parseMaterial()
-				|| type == XMaterialUtil.MUSIC_DISC_STRAD.parseMaterial()
-				|| type == XMaterialUtil.MUSIC_DISC_WAIT.parseMaterial()
-				|| type == XMaterialUtil.MUSIC_DISC_WARD.parseMaterial();
+		return type == XMaterial.MUSIC_DISC_11.get() || type == XMaterial.MUSIC_DISC_13.get()
+				|| type == XMaterial.MUSIC_DISC_5.get() || type == XMaterial.MUSIC_DISC_BLOCKS.get()
+				|| type == XMaterial.MUSIC_DISC_CAT.get() || type == XMaterial.MUSIC_DISC_CHIRP.get()
+				|| type == XMaterial.MUSIC_DISC_FAR.get() || type == XMaterial.MUSIC_DISC_MALL.get()
+				|| type == XMaterial.MUSIC_DISC_MELLOHI.get() || type == XMaterial.MUSIC_DISC_OTHERSIDE.get()
+				|| type == XMaterial.MUSIC_DISC_PIGSTEP.get() || type == XMaterial.MUSIC_DISC_RELIC.get()
+				|| type == XMaterial.MUSIC_DISC_STAL.get() || type == XMaterial.MUSIC_DISC_STRAD.get()
+				|| type == XMaterial.MUSIC_DISC_WAIT.get() || type == XMaterial.MUSIC_DISC_WARD.get();
 	}
 }

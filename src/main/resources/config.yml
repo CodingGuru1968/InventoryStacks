@@ -31,6 +31,11 @@ disallow-stacked-anvil-items: true
 
 update-inventory-on-merge: true
 
+# This option prevents the glitch that happens when you combine a damageable item (not required for 1.17+)
+# Without this, the items could combine and then durability will also combine to undamaged items
+
+prevent-shift-combining-damageable-items: true
+
 # Make brewing stands not be able to stack potions (not required for 1.20.6+)
 # This makes it so brewing stands only allow 1 potion in the potion slot
 

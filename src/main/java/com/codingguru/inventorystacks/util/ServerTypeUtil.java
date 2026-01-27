@@ -1,31 +1,30 @@
 package com.codingguru.inventorystacks.util;
 
 public enum ServerTypeUtil {
+	
+	SPIGOT("MAX_STACK_SIZE", "components", "map"), 
+	PAPER("MAX_STACK_SIZE", "components", "map"),
+	FOLIA("MAX_STACK_SIZE", "components", "map");
 
-	SPIGOT("c", "c", "c"),
-	FOLIA("c", "c", "c"),
-	PAPER("MAX_STACK_SIZE", "components", "map");
-	// PURPUR,
+	private final String dataComponentKeyField;
+	private final String itemComponentsField;
+	private final String internalMapField;
 
-	private String maxStackField;
-	private String itemComponentsField;
-	private String componentsMapField;
-
-	ServerTypeUtil(String maxStackField, String itemComponentsField, String componentsMapField) {
-		this.maxStackField = maxStackField;
-		this.itemComponentsField = itemComponentsField;
-		this.componentsMapField = componentsMapField;
+	ServerTypeUtil(String key, String components, String map) {
+		this.dataComponentKeyField = key;
+		this.itemComponentsField = components;
+		this.internalMapField = map;
 	}
 
-	public String getMaxStackField() {
-		return maxStackField;
+	public String getDataComponentKeyField() {
+		return dataComponentKeyField;
 	}
 
 	public String getItemComponentsField() {
 		return itemComponentsField;
 	}
 
-	public String getComponentsMapField() {
-		return componentsMapField;
+	public String getInternalMapField() {
+		return internalMapField;
 	}
 }

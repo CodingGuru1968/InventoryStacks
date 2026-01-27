@@ -1,12 +1,14 @@
 package com.codingguru.inventorystacks.util;
 
+import java.util.Objects;
+
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 public class ItemUtil {
-	
+
 	public static boolean addItemToBrewingStand(Inventory inventory, ItemStack item) {
 		ItemStack slot1 = inventory.getItem(0);
 		ItemStack slot2 = inventory.getItem(1);
@@ -22,7 +24,32 @@ public class ItemUtil {
 			inventory.setItem(2, item);
 			return true;
 		}
-		
+
+		return false;
+	}
+
+	public static boolean removeOneMatching(Inventory inv, ItemStack needle) {
+		for (int i = 0; i < inv.getSize(); i++) {
+			ItemStack s = inv.getItem(i);
+
+			if (s == null || s.getType() == Material.AIR)
+				continue;
+
+			if (s.getType() != needle.getType())
+				continue;
+
+			if (!Objects.equals(s.getItemMeta(), needle.getItemMeta()))
+				continue;
+
+			if (s.getAmount() <= 1) {
+				inv.setItem(i, null);
+			} else {
+				s.setAmount(s.getAmount() - 1);
+				inv.setItem(i, s);
+			}
+
+			return true;
+		}
 		return false;
 	}
 
