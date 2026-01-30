@@ -67,7 +67,7 @@ public class ItemHandler {
 		ConsoleUtil.message(ChatColor.GREEN + "Stack Sizing Mode: " + ChatColor.YELLOW
 				+ (applier.isModernApi() ? "ItemMeta API (1.20.5+)" : "Legacy NMS"));
 		ConsoleUtil.message("");
-		
+
 		applyConfiguredStacks();
 
 	}
@@ -127,13 +127,19 @@ public class ItemHandler {
 		return applier.isModernApi();
 	}
 
+	public boolean hasUpdatedStack(ItemStack stack) {
+		XMaterial xMat = XMaterial.matchXMaterial(stack);
+
+		if (xMat == null)
+			return false;
+
+		return cachedUpdatedStackSizes.containsKey(xMat);
+	}
+
 	public void applyItem(boolean isStartUp, ItemStack stack) {
 		XMaterial xMat = XMaterial.matchXMaterial(stack);
 
 		if (xMat == null)
-			return;
-
-		if (!cachedUpdatedStackSizes.containsKey(xMat))
 			return;
 
 		int amount = cachedUpdatedStackSizes.get(xMat);
@@ -196,7 +202,7 @@ public class ItemHandler {
 					continue;
 				}
 
-				cacheMaterialStackSize(xMat, size, mat.getMaxStackSize());	
+				cacheMaterialStackSize(xMat, size, mat.getMaxStackSize());
 				applier.applyItem(true, xMat.parseItem(), size);
 				ConsoleUtil.info(ChatColor.YELLOW + "Successfully set " + matName + " stack size to: " + size);
 			}
@@ -277,15 +283,16 @@ public class ItemHandler {
 			ConsoleUtil.info(ChatColor.YELLOW + "Successfully set " + mat.name() + " stack size to: " + stackSize);
 		}
 	}
-	
-	public boolean isItem(Material mat) {
-	    if (mat == null) return false;
 
-	    try {
-	        return mat.isItem(); // 1.13+
-	    } catch (NoSuchMethodError ignored) {
-	        return ReflectionLegacyUtil.hasItemForm(mat) != null; // 1.8–1.12
-	    }
+	public boolean isItem(Material mat) {
+		if (mat == null)
+			return false;
+
+		try {
+			return mat.isItem(); // 1.13+
+		} catch (NoSuchMethodError ignored) {
+			return ReflectionLegacyUtil.hasItemForm(mat) != null; // 1.8–1.12
+		}
 	}
 
 	private int validateStackSize(int stackSize, String itemName) {

@@ -1,9 +1,13 @@
-name: TrailPaths
-version: 1.7.1
+name: InventoryStacks
+version: 2.6.1-BETA
 api-version: 1.13
-main: com.codingguru.trailpaths.TrailPaths
+main: com.codingguru.inventorystacks.InventoryStacks
 authors: [CodingGuru]
 folia-supported: true
 commands:
-    trails:
-     description: All the commands for this plugin.
+    stack:
+     description: Stack all items in your inventory.
+    stacks:
+     description: Reload inventory stacks.
+    inventorystacks:
+     description: Reload inventory stacks.

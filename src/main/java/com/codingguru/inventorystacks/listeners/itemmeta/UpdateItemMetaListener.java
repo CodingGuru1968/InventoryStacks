@@ -68,6 +68,9 @@ public class UpdateItemMetaListener implements Listener {
 		if (stack.getType().isAir())
 			return;
 
+		if (!ItemHandler.getInstance().hasUpdatedStack(stack))
+			return;
+
 		ItemHandler.getInstance().applyItem(false, stack);
 	}
 
@@ -76,6 +79,9 @@ public class UpdateItemMetaListener implements Listener {
 			return;
 
 		if (stack.getType().isAir())
+			return;
+
+		if (!ItemHandler.getInstance().hasUpdatedStack(stack))
 			return;
 
 		final int key = System.identityHashCode(stack);
