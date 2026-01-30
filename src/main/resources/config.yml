@@ -8,71 +8,20 @@ check-for-updates: true # Check for new plugin updates
 
 use-mini-message: false
 
-# Stack command
-# Default Stack Type = HAND / ALL
-# Hand stacks all items player is holding
-# All stacks all the items in the player's inventory
-# Command = /stack or /stack [HAND/ALL]
+# Path Configuration Settings
 
-stack-command:
-  enabled: true
-  default-stack-type: 'HAND'
-  
-# Minecraft 1.20.5+ ONLY
-# Forces legacy reflection-based stack handling instead of ItemMeta
-# May improve performance on large servers with many custom stack updates
-# Known limitation: container GUIs may not immediately reflect updated stack sizes
-# Restart your server when enabling this setting
-  
-use-legacy-reflection: false
-  
-# Update rate for buckets, drinkable items, and damageable items
-# This is an option because on folia it needs more of a delay to work correctly
-# This is in ticks
+# This allows you to set a time period before the material is returned to normal
+# You can set to -1 to disable this feature and it will never return
 
-item-change-delay: 2
+path-timer: -1
 
-# This setting will enable a max stack amount for ALL items in the game and make them all the same size
+# Material Types
+#
+# Format = Material Type To Change:
+#           Types to change to : Percentage chance of each type
+#
 
-max-stack-for-all-items:
-  enabled: false # Disabled by default
-  amount: 1
-  whitelist: # This is a whitelist of items that won't be included
-  - DIAMOND_PICKAXE
-
-# Max Item Stack Sizes
-# Format = MATERIAL NAME : STACK SIZE
-# (This list of items will also work with max-stack-for-all-items if enabled)
-
-items:
-  POTION: 16
-  # SPLASH_POTION: 16 (This is only in later versions)
-
-############################################################################
-#                                                                          #
-#   This section applies when:                                             #
-#                                                                          #
-#   - Minecraft version is earlier than 1.20.5                             #
-#   - OR "use-legacy-reflection" is enabled                                #
-#                                                                          #
-############################################################################
-
-
-# Disallow stacked items/tools in anvils to be applied
-
-disallow-stacked-anvil-items: true
-    
-# Update players inventory after merging stacked items (not required for 1.18+)
-# This makes it look cleaner when items are stacked
-
-update-inventory-on-merge: true
-
-# This option prevents the glitch that happens when you combine a damageable item (not required for 1.17+)
-# Without this, the items could combine and then durability will also combine to undamaged items
-
-prevent-shift-combining-damageable-items: true
-
-# Make brewing stands not be able to stack potions (not required for 1.20.6+)
-# This makes it so brewing stands only allow 1 potion in the potion slot
-
-one-potion-per-slot: true
+paths:
+  GRASS: 
+    DIRT: 50           # If you want just one block type then put the type with 100 chance
+    COARSE_DIRT: 50
