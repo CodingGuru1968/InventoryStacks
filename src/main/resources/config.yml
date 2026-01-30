@@ -18,29 +18,14 @@ stack-command:
   enabled: true
   default-stack-type: 'HAND'
   
-# Only allow items to stack via command (this will disallow merging in inventory)
-
-only-stack-via-command: false
-
-# Disallow stacked items/tools in anvils to be applied
-
-disallow-stacked-anvil-items: true
+# Minecraft 1.20.5+ ONLY
+# Forces legacy reflection-based stack handling instead of ItemMeta
+# May improve performance on large servers with many custom stack updates
+# Known limitation: container GUIs may not immediately reflect updated stack sizes
+# Restart your server when enabling this setting
   
-# Update players inventory after merging stacked items (not required for 1.18+)
-# This makes it look cleaner when items are stacked
-
-update-inventory-on-merge: true
-
-# This option prevents the glitch that happens when you combine a damageable item (not required for 1.17+)
-# Without this, the items could combine and then durability will also combine to undamaged items
-
-prevent-shift-combining-damageable-items: true
-
-# Make brewing stands not be able to stack potions (not required for 1.20.6+)
-# This makes it so brewing stands only allow 1 potion in the potion slot
-
-one-potion-per-slot: true
-
+use-legacy-reflection: false
+  
 # Update rate for buckets, drinkable items, and damageable items
 # This is an option because on folia it needs more of a delay to work correctly
 # This is in ticks
@@ -62,3 +47,32 @@ max-stack-for-all-items:
 items:
   POTION: 16
   # SPLASH_POTION: 16 (This is only in later versions)
+
+############################################################################
+#                                                                          #
+#   This section applies when:                                             #
+#                                                                          #
+#   - Minecraft version is earlier than 1.20.5                             #
+#   - OR "use-legacy-reflection" is enabled                                #
+#                                                                          #
+############################################################################
+
+
+# Disallow stacked items/tools in anvils to be applied
+
+disallow-stacked-anvil-items: true
+    
+# Update players inventory after merging stacked items (not required for 1.18+)
+# This makes it look cleaner when items are stacked
+
+update-inventory-on-merge: true
+
+# This option prevents the glitch that happens when you combine a damageable item (not required for 1.17+)
+# Without this, the items could combine and then durability will also combine to undamaged items
+
+prevent-shift-combining-damageable-items: true
+
+# Make brewing stands not be able to stack potions (not required for 1.20.6+)
+# This makes it so brewing stands only allow 1 potion in the potion slot
+
+one-potion-per-slot: true

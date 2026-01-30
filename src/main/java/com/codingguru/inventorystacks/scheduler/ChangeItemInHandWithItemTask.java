@@ -36,7 +36,7 @@ public class ChangeItemInHandWithItemTask extends Schedule {
 			player.getInventory().setItemInHand(item);
 			return;
 		}
-
+		
 		if (player.getInventory().getItemInMainHand().getType() == mat) {
 			player.getInventory().setItemInMainHand(item);
 		} else if (player.getInventory().getItemInOffHand().getType() == mat) {

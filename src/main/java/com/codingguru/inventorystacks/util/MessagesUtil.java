@@ -21,6 +21,7 @@ public enum MessagesUtil {
 	RELOAD("&aYou have successfully reloaded all configuration files.", true),
 	INCORRECT_USAGE("&cCorrect Usage: %command%", true),
 	IN_GAME("&cYou can only execute this in game.", false),
+	NUMBER_EXCEPTION("&cYou must enter a correct amount.", false),
 	PLAYER_NOT_FOUND("&cNo entity was found with the id: %id%", false),
 	NO_PERMISSION("&cYou do not have permission to execute this command.", true);
 

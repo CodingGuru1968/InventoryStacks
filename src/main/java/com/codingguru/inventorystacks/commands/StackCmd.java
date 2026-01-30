@@ -7,8 +7,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import com.codingguru.inventorystacks.InventoryStacks;
+import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.util.MessagesUtil;
 import com.codingguru.inventorystacks.util.VersionUtil;
 
@@ -88,7 +90,7 @@ public class StackCmd implements CommandExecutor {
 		ItemStack item = getItemInHand(player).clone();
 		ItemStack[] items = player.getInventory().getContents();
 		int amount = item.getAmount();
-		int maxAmount = item.getType().getMaxStackSize();
+		int maxAmount = getMaxStack(item);
 
 		for (int slot = 0; slot < items.length; slot++) {
 			ItemStack foundItem = items[slot];
@@ -138,8 +140,8 @@ public class StackCmd implements CommandExecutor {
 			if (item == null || item.getAmount() <= 0)
 				continue;
 
-			int max = item.getType().getMaxStackSize();
-			
+			int max = getMaxStack(item);
+
 			if (item.getAmount() < max) {
 				int neededUntilMax = max - item.getAmount();
 				for (int j = i + 1; j < inventorySize; j++) {
@@ -170,9 +172,20 @@ public class StackCmd implements CommandExecutor {
 		}
 	}
 
+	private int getMaxStack(ItemStack stack) {
+		if (!ItemHandler.getInstance().isUsingModernAPI())
+			return stack.getType().getMaxStackSize();
+
+		ItemMeta currentMeta = stack.getItemMeta();
+
+		if (currentMeta == null)
+			return stack.getMaxStackSize();
+
+		return currentMeta.getMaxStackSize();
+	}
+
 	private enum StackType {
-		HAND,
-		ALL;
+		HAND, ALL;
 
 		private static StackType getStackTypeFromName(String name) {
 			for (StackType type : values()) {

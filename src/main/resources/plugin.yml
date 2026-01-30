@@ -1,5 +1,5 @@
 name: InventoryStacks
-version: 2.5-BETA
+version: 2.6-BETA
 api-version: 1.13
 main: com.codingguru.inventorystacks.InventoryStacks
 authors: [CodingGuru]

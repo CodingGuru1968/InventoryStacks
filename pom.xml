@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.codingguru</groupId>
 	<artifactId>inventorystacks</artifactId>
-	<version>2.5-BETA</version>
+	<version>2.6-BETA</version>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -80,6 +80,15 @@
 								<exclude>com/cryptomorin/xseries/NoteBlockMusic*</exclude>
 								<exclude>
 									com/cryptomorin/xseries/SkullCacheListener*</exclude>
+								<exclude>com/cryptomorin/xseries/art/**</exclude>
+								<exclude>com/cryptomorin/xseries/profiles/**</exclude>
+								<exclude>com/cryptomorin/xseries/reflection/**</exclude>
+								<exclude>com/cryptomorin/xseries/particles/**</exclude>
+								<exclude>com/cryptomorin/xseries/messages/**</exclude>
+								<exclude>com/cryptomorin/xseries/inventory/**</exclude>
+								<exclude>com/cryptomorin/xseries/paper/**</exclude>
+								<exclude>com/cryptomorin/xseries/XTag*</exclude>
+								<exclude>com/cryptomorin/xseries/XWorldBorder*</exclude>
 							</excludes>
 						</filter>
 					</filters>
