@@ -19,12 +19,19 @@ stack-command:
   default-stack-type: 'HAND'
   
 # Minecraft 1.20.5+ ONLY
-# Forces legacy reflection-based stack handling instead of ItemMeta
+# When TRUE, forces legacy reflection-based stack handling instead of ItemMeta
 # May improve performance on large servers with many custom stack updates
-# Known limitation: container GUIs may not immediately reflect updated stack sizes
-# Restart your server when enabling this setting
+# Known limitation: container GUIs may not reflect updated stack sizes (only visual)
+# Restart your server when toggling this setting
   
 use-legacy-reflection: false
+
+# Minecraft 1.20.5+ ONLY
+# This setting only applies when "use-legacy-reflection" is false
+# When TRUE, an item that is not listed in "items" section, it will reset to default vanilla amount
+# This only applies when it has a custom stack amount to avoid overuse
+
+auto-stack-cleanup: true
   
 # Update rate for buckets, drinkable items, and damageable items
 # This is an option because on folia it needs more of a delay to work correctly
@@ -46,7 +53,7 @@ max-stack-for-all-items:
 
 items:
   POTION: 16
-  # SPLASH_POTION: 16 (This is only in later versions)
+  # SPLASH_POTION: 16
 
 ############################################################################
 #                                                                          #

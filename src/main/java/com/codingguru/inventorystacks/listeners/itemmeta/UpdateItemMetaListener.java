@@ -1,5 +1,6 @@
 package com.codingguru.inventorystacks.listeners.itemmeta;
 
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -12,7 +13,9 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
+import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.scheduler.Schedule;
 
@@ -62,26 +65,14 @@ public class UpdateItemMetaListener implements Listener {
 	}
 
 	private void callNow(ItemStack stack) {
-		if (stack == null)
-			return;
-
-		if (stack.getType().isAir())
-			return;
-
-		if (!ItemHandler.getInstance().hasUpdatedStack(stack))
+		if (!shouldHandle(stack))
 			return;
 
 		ItemHandler.getInstance().applyItem(false, stack);
 	}
 
 	private void callLater(ItemStack stack) {
-		if (stack == null)
-			return;
-
-		if (stack.getType().isAir())
-			return;
-
-		if (!ItemHandler.getInstance().hasUpdatedStack(stack))
+		if (!shouldHandle(stack))
 			return;
 
 		final int key = System.identityHashCode(stack);
@@ -101,5 +92,38 @@ public class UpdateItemMetaListener implements Listener {
 		};
 
 		stackApplyTask.runTaskLater(1L);
+	}
+
+	private boolean shouldHandle(ItemStack stack) {
+		if (stack == null)
+			return false;
+
+		if (stack.getType().isAir())
+			return false;
+
+		if (!ItemHandler.getInstance().hasUpdatedStack(stack)) {
+			handleCleanup(stack);
+			return false;
+		}
+
+		return true;
+	}
+
+	private void handleCleanup(ItemStack stack) {
+		FileConfiguration config = InventoryStacks.getInstance().getConfig();
+
+		if (!config.getBoolean("auto-stack-cleanup"))
+			return;
+
+		ItemMeta meta = stack.getItemMeta();
+
+		if (meta == null)
+			return;
+
+		if (!meta.hasMaxStackSize())
+			return;
+
+		meta.setMaxStackSize(null);
+		stack.setItemMeta(meta);
 	}
 }

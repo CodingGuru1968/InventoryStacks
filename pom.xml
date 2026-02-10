@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.codingguru</groupId>
 	<artifactId>inventorystacks</artifactId>
-	<version>2.6.1-BETA</version>
+	<version>2.6.2-BETA</version>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -55,12 +55,6 @@
 				<artifactId>maven-shade-plugin</artifactId>
 				<version>3.4.1</version>
 				<configuration>
-					<relocations>
-						<relocation>
-							<pattern>com.cryptomorin.xseries</pattern>
-							<shadedPattern>com.codingguru.inventorystacks.util</shadedPattern>
-						</relocation>
-					</relocations>
 					<minimizeJar>false</minimizeJar>
 					<createDependencyReducedPom>false</createDependencyReducedPom>
 					<filters>
@@ -75,6 +69,10 @@
 								<exclude>/*.txt</exclude>
 								<exclude>/*.txt</exclude>
 								<exclude>build.properties</exclude>
+								<exclude>com/cryptomorin/xseries/XEnchantment*</exclude>
+								<exclude>com/cryptomorin/xseries/XEntityType*</exclude>
+								<exclude>com/cryptomorin/xseries/XEntity*</exclude>
+								<exclude>com/cryptomorin/xseries/XSound*</exclude>
 								<exclude>com/cryptomorin/xseries/XBiome*</exclude>
 								<exclude>com/cryptomorin/xseries/NMSExtras*</exclude>
 								<exclude>com/cryptomorin/xseries/NoteBlockMusic*</exclude>
