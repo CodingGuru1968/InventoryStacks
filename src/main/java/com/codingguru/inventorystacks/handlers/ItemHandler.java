@@ -23,7 +23,7 @@ import com.codingguru.inventorystacks.util.ReflectionLegacyUtil;
 import com.codingguru.inventorystacks.util.ServerTypeUtil;
 import com.codingguru.inventorystacks.util.StackSizeApplierUtil;
 import com.codingguru.inventorystacks.util.VersionUtil;
-import com.cryptomorin.xseries.XMaterial;
+import com.codingguru.inventorystacks.util.XMaterialUtil;
 import com.google.common.collect.Maps;
 
 @SuppressWarnings("deprecation")
@@ -32,8 +32,8 @@ public class ItemHandler {
 	private static final ItemHandler INSTANCE = new ItemHandler();
 	private final static InventoryStacks PLUGIN = InventoryStacks.getInstance();
 
-	private final Map<XMaterial, Integer> cachedDefaultStackSizes = Maps.newHashMap();
-	private final Map<XMaterial, Integer> cachedUpdatedStackSizes = Maps.newHashMap();
+	private final Map<XMaterialUtil, Integer> cachedDefaultStackSizes = Maps.newHashMap();
+	private final Map<XMaterialUtil, Integer> cachedUpdatedStackSizes = Maps.newHashMap();
 
 	private VersionUtil serverVersion;
 	private ServerTypeUtil serverType;
@@ -132,7 +132,7 @@ public class ItemHandler {
 	}
 
 	public boolean hasUpdatedStack(ItemStack stack) {
-		XMaterial xMat = XMaterial.matchXMaterial(stack);
+		XMaterialUtil xMat = XMaterialUtil.matchXMaterial(stack);
 
 		if (xMat == null)
 			return false;
@@ -141,7 +141,7 @@ public class ItemHandler {
 	}
 
 	public void applyItem(boolean isStartUp, ItemStack stack) {
-		XMaterial xMat = XMaterial.matchXMaterial(stack);
+		XMaterialUtil xMat = XMaterialUtil.matchXMaterial(stack);
 
 		if (xMat == null)
 			return;
@@ -154,7 +154,7 @@ public class ItemHandler {
 		if (material == Material.AIR)
 			return false;
 
-		XMaterial xMaterial = XMaterial.matchXMaterial(material);
+		XMaterialUtil xMaterial = XMaterialUtil.matchXMaterial(material);
 
 		if (xMaterial == null)
 			return false;
@@ -162,11 +162,11 @@ public class ItemHandler {
 		return hasEditedStackSize(xMaterial);
 	}
 
-	public boolean hasEditedStackSize(XMaterial xMaterial) {
+	public boolean hasEditedStackSize(XMaterialUtil xMaterial) {
 		return cachedUpdatedStackSizes.containsKey(xMaterial);
 	}
 
-	public void cacheMaterialStackSize(XMaterial xMaterial, int newStackSize, int oldStackSize) {
+	public void cacheMaterialStackSize(XMaterialUtil xMaterial, int newStackSize, int oldStackSize) {
 		cachedUpdatedStackSizes.putIfAbsent(xMaterial, newStackSize);
 
 		if (applier.isModernApi()) // no need to cache default stack size
@@ -192,7 +192,7 @@ public class ItemHandler {
 				String matName = e.getKey();
 				int size = e.getValue();
 
-				XMaterial xMat = XMaterial.matchXMaterial(matName).orElse(null);
+				XMaterialUtil xMat = XMaterialUtil.matchXMaterial(matName).orElse(null);
 
 				if (xMat == null) {
 					ConsoleUtil.warning(ChatColor.RED + "The Item: " + matName
@@ -228,7 +228,7 @@ public class ItemHandler {
 
 	private Map<String, Integer> resolveConfiguredItems(Collection<String> keys) {
 		Map<String, Integer> resolved = new HashMap<>();
-		XMaterial[] allMaterials = XMaterial.VALUES;
+		XMaterialUtil[] allMaterials = XMaterialUtil.VALUES;
 
 		for (String key : keys) {
 			if (key == null)
@@ -252,7 +252,7 @@ public class ItemHandler {
 				continue;
 			}
 
-			for (XMaterial material : allMaterials) {
+			for (XMaterialUtil material : allMaterials) {
 				String name = material.name();
 
 				if (pattern.matcher(name).matches()) {
@@ -291,7 +291,7 @@ public class ItemHandler {
 	private void updateAllItems(Set<String> exemptMaterials, int stackSize) {
 		Set<Material> processed = new HashSet<>();
 
-		for (XMaterial xMat : XMaterial.VALUES) {
+		for (XMaterialUtil xMat : XMaterialUtil.VALUES) {
 			if (!xMat.isSupported())
 				continue;
 
@@ -346,7 +346,7 @@ public class ItemHandler {
 		if (applier.isModernApi())
 			return;
 
-		for (Map.Entry<XMaterial, Integer> entry : cachedDefaultStackSizes.entrySet()) {
+		for (Map.Entry<XMaterialUtil, Integer> entry : cachedDefaultStackSizes.entrySet()) {
 			int defaultSize = entry.getValue();
 			applier.applyItem(true, entry.getKey().parseItem(), defaultSize);
 		}

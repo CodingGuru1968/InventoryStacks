@@ -14,7 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import com.codingguru.inventorystacks.scheduler.ChangeItemInHandTask;
 import com.codingguru.inventorystacks.scheduler.ChangeItemInHandWithItemTask;
 import com.codingguru.inventorystacks.util.VersionUtil;
-import com.cryptomorin.xseries.XMaterial;
+import com.codingguru.inventorystacks.util.XMaterialUtil;
 
 public class PlayerBucketEmpty implements Listener {
 
@@ -49,11 +49,11 @@ public class PlayerBucketEmpty implements Listener {
 
 		if (!VersionUtil.v1_21.isServerVersionHigher()) {
 			ChangeItemInHandWithItemTask changeItemTask = new ChangeItemInHandWithItemTask(e.getPlayer(), clone,
-					new ItemStack(XMaterial.BUCKET.get()), XMaterial.BUCKET.get());
+					new ItemStack(XMaterialUtil.BUCKET.get()), XMaterialUtil.BUCKET.get());
 			changeItemTask.runTaskLater(itemChangeDelay);
 		} else {
 			ChangeItemInHandTask changeItemTask = new ChangeItemInHandTask(e.getPlayer(), clone,
-					XMaterial.BUCKET.get());
+					XMaterialUtil.BUCKET.get());
 			changeItemTask.runTaskLater(itemChangeDelay);
 		}
 	}
@@ -89,7 +89,7 @@ public class PlayerBucketEmpty implements Listener {
 		remaining.setAmount(amount - 1);
 
 		ChangeItemInHandWithItemTask task = new ChangeItemInHandWithItemTask(player, remaining,
-				new ItemStack(Material.BUCKET), XMaterial.BUCKET.get());
+				new ItemStack(Material.BUCKET), XMaterialUtil.BUCKET.get());
 		task.runTaskLater(itemChangeDelay);
 	}
 

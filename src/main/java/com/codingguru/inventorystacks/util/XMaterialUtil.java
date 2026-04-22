@@ -2304,6 +2304,16 @@ public enum XMaterialUtil {
     }
 
     /**
+     * Gets the material for this XMaterialUtil.
+     *
+     * @return the parsed Bukkit material or null if unsupported.
+     */
+    @Nullable
+    public Material get() {
+        return this.parseMaterial();
+    }
+
+    /**
      * Checks if an item has the same material (and data value on older versions).
      *
      * @param item item to check.
@@ -2430,10 +2440,17 @@ public enum XMaterialUtil {
 
         static { // This needs to be right below VERSION because of initialization order.
             String version = Bukkit.getVersion();
-            Matcher matcher = Pattern.compile("MC: \\d\\.(\\d+)").matcher(version);
+            Matcher matcher = Pattern.compile("MC: (\\d+)(?:\\.(\\d+))?").matcher(version);
 
-            if (matcher.find()) VERSION = Integer.parseInt(matcher.group(1));
-            else throw new IllegalArgumentException("Failed to parse server version from: " + version);
+            if (matcher.find()) {
+                int major = Integer.parseInt(matcher.group(1));
+                String minorGroup = matcher.group(2);
+
+                // Older versions use 1.x, while newer versions may use x.y.z.
+                VERSION = major == 1 && minorGroup != null ? Integer.parseInt(minorGroup) : major;
+            } else {
+                throw new IllegalArgumentException("Failed to parse server version from: " + version);
+            }
         }
 
         /**

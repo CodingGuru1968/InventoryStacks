@@ -21,7 +21,7 @@ import com.codingguru.inventorystacks.scheduler.InventoryUpdateTask;
 import com.codingguru.inventorystacks.util.ItemUtil;
 import com.codingguru.inventorystacks.util.MessagesUtil;
 import com.codingguru.inventorystacks.util.VersionUtil;
-import com.cryptomorin.xseries.XMaterial;
+import com.codingguru.inventorystacks.util.XMaterialUtil;
 
 public class InventoryClick implements Listener {
 
@@ -44,7 +44,7 @@ public class InventoryClick implements Listener {
 		if (stack == null || stack.getType() == Material.AIR)
 			return;
 
-		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(XMaterial.matchXMaterial(stack.getType())))
+		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(XMaterialUtil.matchXMaterial(stack.getType())))
 			return;
 
 		Inventory brewingInv = e.getInventory();
@@ -97,7 +97,7 @@ public class InventoryClick implements Listener {
 			return;
 
 		if (!ItemHandler.getInstance().getCachedMaterialSizes()
-				.containsKey(XMaterial.matchXMaterial(e.getCurrentItem().getType())))
+				.containsKey(XMaterialUtil.matchXMaterial(e.getCurrentItem().getType())))
 			return;
 
 		InventoryUpdateTask updateInventoryTask = new InventoryUpdateTask((Player) e.getWhoClicked());
@@ -115,7 +115,7 @@ public class InventoryClick implements Listener {
 		if (e.getSlotType() != SlotType.RESULT)
 			return;
 
-		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(XMaterial.ENCHANTED_BOOK))
+		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(XMaterialUtil.ENCHANTED_BOOK))
 			return;
 
 		ItemStack craftedItem = e.getInventory().getContents()[1];
@@ -153,7 +153,7 @@ public class InventoryClick implements Listener {
 		if (craftedItem.getAmount() <= 1)
 			return;
 
-		XMaterial xMaterial = XMaterial.matchXMaterial(craftedItem.getType());
+		XMaterialUtil xMaterial = XMaterialUtil.matchXMaterial(craftedItem.getType());
 
 		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(xMaterial))
 			return;

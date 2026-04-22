@@ -8,7 +8,7 @@ import org.bukkit.inventory.ItemStack;
 
 import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.scheduler.DamageItemTask;
-import com.cryptomorin.xseries.XMaterial;
+import com.codingguru.inventorystacks.util.XMaterialUtil;
 
 public class PlayerItemDamage implements Listener {
 
@@ -25,7 +25,7 @@ public class PlayerItemDamage implements Listener {
 		if (originalAmount <= 1)
 			return;
 
-		XMaterial xMat = XMaterial.matchXMaterial(e.getItem().getType());
+		XMaterialUtil xMat = XMaterialUtil.matchXMaterial(e.getItem().getType());
 
 		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(xMat))
 			return;

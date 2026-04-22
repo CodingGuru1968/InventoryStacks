@@ -9,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import com.codingguru.inventorystacks.scheduler.ChangeItemInHandWithItemTask;
 import com.codingguru.inventorystacks.util.ItemUtil;
 import com.codingguru.inventorystacks.util.VersionUtil;
-import com.cryptomorin.xseries.XMaterial;
+import com.codingguru.inventorystacks.util.XMaterialUtil;
 
 public class PlayerItemConsume implements Listener {
 
@@ -30,22 +30,22 @@ public class PlayerItemConsume implements Listener {
 		if (e.getItem().getAmount() <= 1)
 			return;
 
-		if (e.getItem().getType() == XMaterial.MILK_BUCKET.get()) {
-			ItemUtil.addItem(e.getPlayer(), new ItemStack(XMaterial.BUCKET.get()));
+		if (e.getItem().getType() == XMaterialUtil.MILK_BUCKET.get()) {
+			ItemUtil.addItem(e.getPlayer(), new ItemStack(XMaterialUtil.BUCKET.get()));
 			return;
 		}
 
-		if (e.getItem().getType() != XMaterial.RABBIT_STEW.get()
-				&& e.getItem().getType() != XMaterial.SUSPICIOUS_STEW.get()
-				&& e.getItem().getType() != XMaterial.MUSHROOM_STEW.get()
-				&& e.getItem().getType() != XMaterial.BEETROOT_SOUP.get())
+		if (e.getItem().getType() != XMaterialUtil.RABBIT_STEW.get()
+				&& e.getItem().getType() != XMaterialUtil.SUSPICIOUS_STEW.get()
+				&& e.getItem().getType() != XMaterialUtil.MUSHROOM_STEW.get()
+				&& e.getItem().getType() != XMaterialUtil.BEETROOT_SOUP.get())
 			return;
 
 		ItemStack clone = e.getItem().clone();
 		clone.setAmount(e.getItem().getAmount() - 1);
 
 		ChangeItemInHandWithItemTask changeItemTask = new ChangeItemInHandWithItemTask(e.getPlayer(), clone,
-				new ItemStack(XMaterial.BOWL.get()), XMaterial.BOWL.get());
+				new ItemStack(XMaterialUtil.BOWL.get()), XMaterialUtil.BOWL.get());
 		changeItemTask.runTaskLater(itemChangeDelay);
 	}
 

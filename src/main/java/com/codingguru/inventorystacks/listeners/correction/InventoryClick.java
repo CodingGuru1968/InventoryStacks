@@ -21,7 +21,7 @@ import com.codingguru.inventorystacks.scheduler.InventoryUpdateTask;
 import com.codingguru.inventorystacks.util.ItemUtil;
 import com.codingguru.inventorystacks.util.MessagesUtil;
 import com.codingguru.inventorystacks.util.VersionUtil;
-import com.cryptomorin.xseries.XMaterial;
+import com.codingguru.inventorystacks.util.XMaterialUtil;
 
 public class InventoryClick implements Listener {
 
@@ -114,7 +114,7 @@ public class InventoryClick implements Listener {
 		if (e.getSlotType() != SlotType.RESULT)
 			return;
 
-		if (!ItemHandler.getInstance().hasEditedStackSize(XMaterial.ENCHANTED_BOOK))
+		if (!ItemHandler.getInstance().hasEditedStackSize(XMaterialUtil.ENCHANTED_BOOK))
 			return;
 
 		ItemStack craftedItem = e.getInventory().getContents()[1];

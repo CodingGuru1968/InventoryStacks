@@ -19,7 +19,7 @@ import org.bukkit.Material;
 
 import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
-import com.cryptomorin.xseries.XMaterial;
+import com.codingguru.inventorystacks.util.XMaterialUtil;
 
 @SuppressWarnings("deprecation")
 public final class ReflectionUtil {
@@ -60,7 +60,7 @@ public final class ReflectionUtil {
 				String matName = e.getKey();
 				int size = e.getValue();
 
-				XMaterial xMat = XMaterial.matchXMaterial(matName).orElse(null);
+				XMaterialUtil xMat = XMaterialUtil.matchXMaterial(matName).orElse(null);
 
 				if (xMat == null) {
 					ConsoleUtil.warning(ChatColor.RED + "The Item: " + matName
@@ -101,7 +101,7 @@ public final class ReflectionUtil {
 
 	private static Map<String, Integer> resolveConfiguredItems(Collection<String> keys) {
 		Map<String, Integer> resolved = new HashMap<>();
-		XMaterial[] allMaterials = XMaterial.VALUES;
+		XMaterialUtil[] allMaterials = XMaterialUtil.VALUES;
 
 		for (String key : keys) {
 			if (key == null)
@@ -124,7 +124,7 @@ public final class ReflectionUtil {
 				continue;
 			}
 
-			for (XMaterial material : allMaterials) {
+			for (XMaterialUtil material : allMaterials) {
 				String name = material.name();
 
 				if (pattern.matcher(name).matches()) {
@@ -139,7 +139,7 @@ public final class ReflectionUtil {
 	private static void updateAllItems(Set<String> exemptMaterials, int stackSize) {
 		Set<Material> processed = new HashSet<>();
 
-		for (XMaterial xMat : XMaterial.VALUES) {
+		for (XMaterialUtil xMat : XMaterialUtil.VALUES) {
 			if (!xMat.isSupported())
 				continue;
 
