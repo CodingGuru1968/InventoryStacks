@@ -84,6 +84,10 @@ public class ItemHandler {
 		String majorMinor = parts[0] + "." + parts[1];
 
 		if (versionFound.equalsIgnoreCase("craftbukkit")) {
+			if (majorMinor.equals("26.1") || majorMinor.equals("1.26")) {
+				serverVersion = VersionUtil.v1_26;
+				return true;
+			}
 			if (majorMinor.equals("1.21")) {
 				serverVersion = VersionUtil.v1_21;
 				return true;
@@ -237,11 +241,12 @@ public class ItemHandler {
 				continue;
 
 			int stackSize = validateStackSize(PLUGIN.getConfig().getInt("items." + key), key);
+			String patternInput = resolveItemGroupPattern(key);
 
 			final Pattern pattern;
 
 			try {
-				pattern = Pattern.compile(key, Pattern.CASE_INSENSITIVE);
+				pattern = Pattern.compile(patternInput, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException ex) {
 				ConsoleUtil.warning(ChatColor.RED + "Invalid regex in items: '" + key + "': " + ex.getDescription());
 				continue;
@@ -257,6 +262,30 @@ public class ItemHandler {
 		}
 
 		return resolved;
+	}
+
+	private String resolveItemGroupPattern(String key) {
+		String normalized = key.trim().toUpperCase();
+
+		switch (normalized) {
+		case "BEDS":
+		case "BED":
+			return "^.*_BED$";
+		case "POTIONS":
+		case "POTION":
+			return "^(POTION|SPLASH_POTION|LINGERING_POTION)$";
+		case "STEWS":
+		case "STEW":
+			return "^(MUSHROOM_STEW|RABBIT_STEW|SUSPICIOUS_STEW|BEETROOT_SOUP)$";
+		case "BUCKETS":
+		case "BUCKET":
+			return "^(BUCKET|.*_BUCKET)$";
+		case "BOATS":
+		case "BOAT":
+			return "^(.*_BOAT|.*_CHEST_BOAT|.*_RAFT|.*_CHEST_RAFT)$";
+		default:
+			return key;
+		}
 	}
 
 	private void updateAllItems(Set<String> exemptMaterials, int stackSize) {

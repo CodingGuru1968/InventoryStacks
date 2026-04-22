@@ -49,10 +49,17 @@ max-stack-for-all-items:
 
 # Max Item Stack Sizes
 # Format = MATERIAL NAME : STACK SIZE
+# Supports exact item names, regex, and predefined groups:
+# BEDS, POTIONS, STEWS, BUCKETS, BOATS
 # (This list of items will also work with max-stack-for-all-items if enabled)
 
 items:
   POTION: 16
+  # BEDS: 16
+  # POTIONS: 16
+  # STEWS: 16
+  # BUCKETS: 16
+  # BOATS: 16
   # SPLASH_POTION: 16
 
 ############################################################################
