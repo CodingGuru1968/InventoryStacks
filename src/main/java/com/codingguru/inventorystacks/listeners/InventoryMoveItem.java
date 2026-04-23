@@ -28,7 +28,7 @@ public class InventoryMoveItem implements Listener {
 		if (it == null || it.getType() == Material.AIR)
 			return;
 
-		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(XMaterialUtil.matchXMaterial(it.getType())))
+		if (!ItemHandler.getInstance().hasEditedStackSize(it.getType()))
 			return;
 
 		if (!isAnyPotion(it))

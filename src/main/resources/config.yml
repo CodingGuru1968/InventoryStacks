@@ -2,6 +2,10 @@
 
 check-for-updates: true # Check for new plugin updates
 
+# Enables extra console logging for troubleshooting
+# Recommended to keep false unless actively debugging
+debug-mode: false
+
 # Use mini messages
 # Allows for clickable links, actions and more.
 # https://www.spigotmc.org/threads/minimessage-rich-text-messages-made-easy.433454/

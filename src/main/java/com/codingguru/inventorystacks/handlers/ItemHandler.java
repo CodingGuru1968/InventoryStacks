@@ -34,6 +34,8 @@ public class ItemHandler {
 
 	private final Map<XMaterialUtil, Integer> cachedDefaultStackSizes = Maps.newHashMap();
 	private final Map<XMaterialUtil, Integer> cachedUpdatedStackSizes = Maps.newHashMap();
+	private final Map<Material, Integer> cachedUpdatedDirectMaterialSizes = Maps.newHashMap();
+	private final Set<String> loggedUnsupportedMaterials = new HashSet<>();
 
 	private VersionUtil serverVersion;
 	private ServerTypeUtil serverType;
@@ -132,21 +134,33 @@ public class ItemHandler {
 	}
 
 	public boolean hasUpdatedStack(ItemStack stack) {
-		XMaterialUtil xMat = matchXMaterialSafely(stack);
-
-		if (xMat == null)
+		if (stack == null || stack.getType() == Material.AIR)
 			return false;
 
-		return cachedUpdatedStackSizes.containsKey(xMat);
+		XMaterialUtil xMat = matchXMaterialSafely(stack);
+
+		if (xMat != null)
+			return cachedUpdatedStackSizes.containsKey(xMat);
+
+		return cachedUpdatedDirectMaterialSizes.containsKey(stack.getType());
 	}
 
 	public void applyItem(boolean isStartUp, ItemStack stack) {
-		XMaterialUtil xMat = matchXMaterialSafely(stack);
-
-		if (xMat == null)
+		if (stack == null || stack.getType() == Material.AIR)
 			return;
 
-		Integer amount = cachedUpdatedStackSizes.get(xMat);
+		XMaterialUtil xMat = matchXMaterialSafely(stack);
+
+		if (xMat != null) {
+			Integer amount = cachedUpdatedStackSizes.get(xMat);
+			if (amount == null)
+				return;
+
+			applier.applyItem(isStartUp, stack, amount);
+			return;
+		}
+
+		Integer amount = cachedUpdatedDirectMaterialSizes.get(stack.getType());
 		if (amount == null)
 			return;
 
@@ -156,24 +170,51 @@ public class ItemHandler {
 	private XMaterialUtil matchXMaterialSafely(ItemStack stack) {
 		try {
 			return XMaterialUtil.matchXMaterial(stack);
-		} catch (IllegalArgumentException ignored) {
+		} catch (IllegalArgumentException ex) {
+			debugUnsupportedMaterial(stack.getType(), ex);
 			return null;
 		}
+	}
+
+	private XMaterialUtil matchXMaterialSafely(Material material) {
+		try {
+			return XMaterialUtil.matchXMaterial(material);
+		} catch (IllegalArgumentException ex) {
+			debugUnsupportedMaterial(material, ex);
+			return null;
+		}
+	}
+
+	private void debugUnsupportedMaterial(Material material, Exception ex) {
+		if (material == null)
+			return;
+
+		String key = material.name().toUpperCase();
+
+		if (!loggedUnsupportedMaterials.add(key))
+			return;
+
+		ConsoleUtil.debug("Unsupported XMaterial mapping detected for '" + material.name()
+				+ "' on server version " + getServerVersion() + ". Falling back to direct Material handling.");
+		ConsoleUtil.debug("Root cause: " + ex.getMessage());
 	}
 
 	public boolean hasEditedStackSize(Material material) {
 		if (material == Material.AIR)
 			return false;
 
-		XMaterialUtil xMaterial = XMaterialUtil.matchXMaterial(material);
+		XMaterialUtil xMaterial = matchXMaterialSafely(material);
 
-		if (xMaterial == null)
-			return false;
+		if (xMaterial != null)
+			return hasEditedStackSize(xMaterial);
 
-		return hasEditedStackSize(xMaterial);
+		return cachedUpdatedDirectMaterialSizes.containsKey(material);
 	}
 
 	public boolean hasEditedStackSize(XMaterialUtil xMaterial) {
+		if (xMaterial == null)
+			return false;
+
 		return cachedUpdatedStackSizes.containsKey(xMaterial);
 	}
 
@@ -186,10 +227,19 @@ public class ItemHandler {
 		cachedDefaultStackSizes.putIfAbsent(xMaterial, oldStackSize);
 	}
 
+	public void cacheMaterialStackSize(Material material, int newStackSize) {
+		if (material == null || material == Material.AIR)
+			return;
+
+		cachedUpdatedDirectMaterialSizes.putIfAbsent(material, newStackSize);
+	}
+
 	public void reloadInventoryStacks() {
 		resetMaterialsToDefaultValues();
 		cachedDefaultStackSizes.clear();
 		cachedUpdatedStackSizes.clear();
+		cachedUpdatedDirectMaterialSizes.clear();
+		loggedUnsupportedMaterials.clear();
 		applyConfiguredStacks();
 	}
 
@@ -206,8 +256,18 @@ public class ItemHandler {
 				XMaterialUtil xMat = XMaterialUtil.matchXMaterial(matName).orElse(null);
 
 				if (xMat == null) {
-					ConsoleUtil.warning(ChatColor.RED + "The Item: " + matName
-							+ " does not exist. Check MATERIAL_LIST.txt for all up to date item names.");
+					Material directMaterial = resolveMaterialByName(matName);
+
+					if (directMaterial == null || !isItem(directMaterial)) {
+						ConsoleUtil.warning(ChatColor.RED + "The Item: " + matName
+								+ " does not exist. Check MATERIAL_LIST.txt for all up to date item names.");
+						continue;
+					}
+
+					cacheMaterialStackSize(directMaterial, size);
+					applier.applyItem(true, new ItemStack(directMaterial), size);
+					ConsoleUtil.info(ChatColor.YELLOW + "Successfully set " + directMaterial.name() + " stack size to: " + size
+							+ " (direct Material fallback)");
 					continue;
 				}
 
@@ -235,6 +295,26 @@ public class ItemHandler {
 
 			updateAllItems(exemptMaterials, stackSize);
 		}
+	}
+
+	private Material resolveMaterialByName(String materialName) {
+		if (materialName == null || materialName.trim().isEmpty())
+			return null;
+
+		String normalized = materialName.trim().toUpperCase();
+
+		Material matched = Material.getMaterial(normalized);
+		if (matched != null)
+			return matched;
+
+		matched = Material.matchMaterial(materialName);
+		if (matched != null)
+			return matched;
+
+		if (!normalized.startsWith("MINECRAFT:"))
+			return null;
+
+		return Material.matchMaterial(normalized.substring("MINECRAFT:".length()));
 	}
 
 	private Map<String, Integer> resolveConfiguredItems(Collection<String> keys) {
@@ -321,6 +401,22 @@ public class ItemHandler {
 			cacheMaterialStackSize(xMat, stackSize, mat.getMaxStackSize());
 			applier.applyItem(true, xMat.parseItem(), stackSize);
 			ConsoleUtil.info(ChatColor.YELLOW + "Successfully set " + mat.name() + " stack size to: " + stackSize);
+		}
+
+		for (Material mat : Material.values()) {
+			if (mat == null || !isItem(mat))
+				continue;
+
+			if (exemptMaterials.contains(mat.name().toUpperCase()))
+				continue;
+
+			if (!processed.add(mat))
+				continue;
+
+			cacheMaterialStackSize(mat, stackSize);
+			applier.applyItem(true, new ItemStack(mat), stackSize);
+			ConsoleUtil.info(ChatColor.YELLOW + "Successfully set " + mat.name() + " stack size to: " + stackSize
+					+ " (direct Material fallback)");
 		}
 	}
 

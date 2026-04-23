@@ -22,7 +22,7 @@ public class FurnaceBurn implements Listener {
 		if (e.getFuel().getAmount() <= 1)
 			return;
 
-		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(XMaterialUtil.LAVA_BUCKET))
+		if (!ItemHandler.getInstance().hasEditedStackSize(XMaterialUtil.LAVA_BUCKET))
 			return;
 
 		e.getBlock().getWorld().dropItem(e.getBlock().getLocation(), new ItemStack(Material.BUCKET));

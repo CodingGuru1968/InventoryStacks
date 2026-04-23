@@ -44,7 +44,7 @@ public class InventoryClick implements Listener {
 		if (stack == null || stack.getType() == Material.AIR)
 			return;
 
-		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(XMaterialUtil.matchXMaterial(stack.getType())))
+		if (!ItemHandler.getInstance().hasEditedStackSize(stack.getType()))
 			return;
 
 		Inventory brewingInv = e.getInventory();
@@ -96,8 +96,7 @@ public class InventoryClick implements Listener {
 				&& !(e.getCursor() != null && e.getCursor().getType() != Material.AIR))
 			return;
 
-		if (!ItemHandler.getInstance().getCachedMaterialSizes()
-				.containsKey(XMaterialUtil.matchXMaterial(e.getCurrentItem().getType())))
+		if (!ItemHandler.getInstance().hasEditedStackSize(e.getCurrentItem().getType()))
 			return;
 
 		InventoryUpdateTask updateInventoryTask = new InventoryUpdateTask((Player) e.getWhoClicked());
@@ -115,7 +114,7 @@ public class InventoryClick implements Listener {
 		if (e.getSlotType() != SlotType.RESULT)
 			return;
 
-		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(XMaterialUtil.ENCHANTED_BOOK))
+		if (!ItemHandler.getInstance().hasEditedStackSize(XMaterialUtil.ENCHANTED_BOOK))
 			return;
 
 		ItemStack craftedItem = e.getInventory().getContents()[1];
@@ -153,9 +152,7 @@ public class InventoryClick implements Listener {
 		if (craftedItem.getAmount() <= 1)
 			return;
 
-		XMaterialUtil xMaterial = XMaterialUtil.matchXMaterial(craftedItem.getType());
-
-		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(xMaterial))
+		if (!ItemHandler.getInstance().hasEditedStackSize(craftedItem.getType()))
 			return;
 
 		e.getWhoClicked().closeInventory();
