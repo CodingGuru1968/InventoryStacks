@@ -132,7 +132,7 @@ public class ItemHandler {
 	}
 
 	public boolean hasUpdatedStack(ItemStack stack) {
-		XMaterialUtil xMat = XMaterialUtil.matchXMaterial(stack);
+		XMaterialUtil xMat = matchXMaterialSafely(stack);
 
 		if (xMat == null)
 			return false;
@@ -141,13 +141,24 @@ public class ItemHandler {
 	}
 
 	public void applyItem(boolean isStartUp, ItemStack stack) {
-		XMaterialUtil xMat = XMaterialUtil.matchXMaterial(stack);
+		XMaterialUtil xMat = matchXMaterialSafely(stack);
 
 		if (xMat == null)
 			return;
 
-		int amount = cachedUpdatedStackSizes.get(xMat);
+		Integer amount = cachedUpdatedStackSizes.get(xMat);
+		if (amount == null)
+			return;
+
 		applier.applyItem(isStartUp, stack, amount);
+	}
+
+	private XMaterialUtil matchXMaterialSafely(ItemStack stack) {
+		try {
+			return XMaterialUtil.matchXMaterial(stack);
+		} catch (IllegalArgumentException ignored) {
+			return null;
+		}
 	}
 
 	public boolean hasEditedStackSize(Material material) {
