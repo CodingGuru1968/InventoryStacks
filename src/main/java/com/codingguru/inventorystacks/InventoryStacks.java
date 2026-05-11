@@ -15,6 +15,7 @@ import com.codingguru.inventorystacks.listeners.correction.PlayerItemConsume;
 import com.codingguru.inventorystacks.listeners.general.BlockPlace;
 import com.codingguru.inventorystacks.listeners.general.Commands;
 import com.codingguru.inventorystacks.listeners.general.PlayerItemDamage;
+import com.codingguru.inventorystacks.listeners.general.TotemOffhandLimit;
 import com.codingguru.inventorystacks.listeners.itemmeta.UpdateItemMetaListener;
 import com.codingguru.inventorystacks.managers.SettingsManager;
 import com.codingguru.inventorystacks.util.ConsoleUtil;
@@ -52,6 +53,7 @@ public class InventoryStacks extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(new Commands(), this);
 		getServer().getPluginManager().registerEvents(new PlayerItemDamage(itemChangeDelay), this);
 		getServer().getPluginManager().registerEvents(new BlockPlace(itemChangeDelay), this);
+		getServer().getPluginManager().registerEvents(new TotemOffhandLimit(), this);
 
 		if (ItemHandler.getInstance().isUsingModernAPI()) {
 			getServer().getPluginManager().registerEvents(new UpdateItemMetaListener(), this);
