@@ -30,6 +30,14 @@ stack-command:
   
 use-legacy-reflection: false
 
+# Bedrock clients connected through Geyser/Floodgate are more reliable with
+# global Material stack sizes than per-item ItemMeta stack size components.
+# When TRUE and Geyser/Floodgate is installed, this automatically uses legacy
+# reflection stack handling even on Minecraft 1.20.5+.
+
+geyser-support:
+  auto-use-legacy-reflection: true
+
 # Minecraft 1.20.5+ ONLY
 # This setting only applies when "use-legacy-reflection" is false
 # When TRUE, an item that is not listed in "items" section, it will reset to default vanilla amount
@@ -54,7 +62,10 @@ max-stack-for-all-items:
 # Max Item Stack Sizes
 # Format = MATERIAL NAME : STACK SIZE
 # Supports exact item names, regex, and predefined groups:
-# BEDS, POTIONS, STEWS, BUCKETS, BOATS
+# BEDS, POTIONS, STEWS, BUCKETS, BOATS, MINECARTS, TOOLS, WEAPONS,
+# ARMOR, HORSE_ARMOR, DYES, SIGNS, DOORS, TRAPDOORS, BUTTONS,
+# PRESSURE_PLATES, FENCES, SLABS, STAIRS, WALLS, CARPETS, BANNERS,
+# MUSIC_DISCS, SPAWN_EGGS, ARROWS, FIREWORKS, FOOD
 # (This list of items will also work with max-stack-for-all-items if enabled)
 
 items:
@@ -64,6 +75,12 @@ items:
   # STEWS: 16
   # BUCKETS: 16
   # BOATS: 16
+  # MINECARTS: 16
+  # TOOLS: 1
+  # WEAPONS: 1
+  # ARMOR: 1
+  # MUSIC_DISCS: 16
+  # SPAWN_EGGS: 16
   # SPLASH_POTION: 16
 
 ############################################################################
