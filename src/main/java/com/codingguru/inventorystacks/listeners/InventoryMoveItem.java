@@ -11,7 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.scheduler.FixBrewingStandTask;
-import com.cryptomorin.xseries.XMaterial;
+import com.codingguru.inventorystacks.util.XMaterialUtil;
 
 public class InventoryMoveItem implements Listener {
 
@@ -28,7 +28,7 @@ public class InventoryMoveItem implements Listener {
 		if (it == null || it.getType() == Material.AIR)
 			return;
 
-		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(XMaterial.matchXMaterial(it.getType())))
+		if (!ItemHandler.getInstance().hasEditedStackSize(it.getType()))
 			return;
 
 		if (!isAnyPotion(it))
@@ -61,8 +61,8 @@ public class InventoryMoveItem implements Listener {
 
 	private boolean isAnyPotion(ItemStack item) {
 		Material t = item.getType();
-		return t == Material.POTION || (XMaterial.matchXMaterial("SPLASH_POTION").map(XMaterial::get).orElse(null) == t)
-				|| (XMaterial.matchXMaterial("LINGERING_POTION").map(XMaterial::get).orElse(null) == t);
+		return t == Material.POTION || (XMaterialUtil.matchXMaterial("SPLASH_POTION").map(XMaterialUtil::get).orElse(null) == t)
+				|| (XMaterialUtil.matchXMaterial("LINGERING_POTION").map(XMaterialUtil::get).orElse(null) == t);
 	}
 
 }

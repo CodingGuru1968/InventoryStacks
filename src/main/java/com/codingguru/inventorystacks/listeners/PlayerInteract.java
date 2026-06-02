@@ -10,7 +10,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.codingguru.inventorystacks.util.VersionUtil;
-import com.cryptomorin.xseries.XMaterial;
+import com.codingguru.inventorystacks.util.XMaterialUtil;
 
 public class PlayerInteract implements Listener {
 
@@ -22,10 +22,10 @@ public class PlayerInteract implements Listener {
 		if (e.getAction() != Action.RIGHT_CLICK_BLOCK)
 			return;
 
-		if (e.getClickedBlock().getType() != XMaterial.JUKEBOX.get())
+		if (e.getClickedBlock().getType() != XMaterialUtil.JUKEBOX.get())
 			return;
 
-		if (e.getItem() == null || e.getItem().getType() == XMaterial.AIR.get())
+		if (e.getItem() == null || e.getItem().getType() == XMaterialUtil.AIR.get())
 			return;
 
 		ItemStack holding = e.getItem();
@@ -52,13 +52,13 @@ public class PlayerInteract implements Listener {
 	}
 
 	private boolean isMusicDisc(Material type) {
-		return type == XMaterial.MUSIC_DISC_11.get() || type == XMaterial.MUSIC_DISC_13.get()
-				|| type == XMaterial.MUSIC_DISC_5.get() || type == XMaterial.MUSIC_DISC_BLOCKS.get()
-				|| type == XMaterial.MUSIC_DISC_CAT.get() || type == XMaterial.MUSIC_DISC_CHIRP.get()
-				|| type == XMaterial.MUSIC_DISC_FAR.get() || type == XMaterial.MUSIC_DISC_MALL.get()
-				|| type == XMaterial.MUSIC_DISC_MELLOHI.get() || type == XMaterial.MUSIC_DISC_OTHERSIDE.get()
-				|| type == XMaterial.MUSIC_DISC_PIGSTEP.get() || type == XMaterial.MUSIC_DISC_RELIC.get()
-				|| type == XMaterial.MUSIC_DISC_STAL.get() || type == XMaterial.MUSIC_DISC_STRAD.get()
-				|| type == XMaterial.MUSIC_DISC_WAIT.get() || type == XMaterial.MUSIC_DISC_WARD.get();
+		return type == XMaterialUtil.MUSIC_DISC_11.get() || type == XMaterialUtil.MUSIC_DISC_13.get()
+				|| type == XMaterialUtil.MUSIC_DISC_5.get() || type == XMaterialUtil.MUSIC_DISC_BLOCKS.get()
+				|| type == XMaterialUtil.MUSIC_DISC_CAT.get() || type == XMaterialUtil.MUSIC_DISC_CHIRP.get()
+				|| type == XMaterialUtil.MUSIC_DISC_FAR.get() || type == XMaterialUtil.MUSIC_DISC_MALL.get()
+				|| type == XMaterialUtil.MUSIC_DISC_MELLOHI.get() || type == XMaterialUtil.MUSIC_DISC_OTHERSIDE.get()
+				|| type == XMaterialUtil.MUSIC_DISC_PIGSTEP.get() || type == XMaterialUtil.MUSIC_DISC_RELIC.get()
+				|| type == XMaterialUtil.MUSIC_DISC_STAL.get() || type == XMaterialUtil.MUSIC_DISC_STRAD.get()
+				|| type == XMaterialUtil.MUSIC_DISC_WAIT.get() || type == XMaterialUtil.MUSIC_DISC_WARD.get();
 	}
 }

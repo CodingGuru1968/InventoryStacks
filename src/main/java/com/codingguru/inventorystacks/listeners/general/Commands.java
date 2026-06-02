@@ -18,7 +18,7 @@ import com.codingguru.inventorystacks.util.DamageableUtil;
 import com.codingguru.inventorystacks.util.ItemUtil;
 import com.codingguru.inventorystacks.util.MessagesUtil;
 import com.codingguru.inventorystacks.util.RandomUtil;
-import com.cryptomorin.xseries.XMaterial;
+import com.codingguru.inventorystacks.util.XMaterialUtil;
 import com.google.common.collect.Lists;
 
 public class Commands implements Listener {
@@ -47,12 +47,12 @@ public class Commands implements Listener {
 			return;
 		}
 		
-		Optional<XMaterial> item = XMaterial.matchXMaterial(itemName);
+		Optional<XMaterialUtil> item = XMaterialUtil.matchXMaterial(itemName);
 
 		if (item == null || !item.isPresent() || item.get() == null)
 			return;
 
-		XMaterial material = item.get();
+		XMaterialUtil material = item.get();
 
 		if (!ItemHandler.getInstance().hasEditedStackSize(material))
 			return;
@@ -105,12 +105,12 @@ public class Commands implements Listener {
 			return;
 		}
 
-		Optional<XMaterial> item = XMaterial.matchXMaterial(itemName);
+		Optional<XMaterialUtil> item = XMaterialUtil.matchXMaterial(itemName);
 
 		if (item == null || !item.isPresent() || item.get() == null)
 			return;
 
-		XMaterial material = item.get();
+		XMaterialUtil material = item.get();
 
 		if (!ItemHandler.getInstance().hasEditedStackSize(material))
 			return;

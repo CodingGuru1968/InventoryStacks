@@ -18,7 +18,7 @@ import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.util.ItemUtil;
 import com.codingguru.inventorystacks.util.MessagesUtil;
 import com.codingguru.inventorystacks.util.RandomUtil;
-import com.cryptomorin.xseries.XMaterial;
+import com.codingguru.inventorystacks.util.XMaterialUtil;
 import com.google.common.collect.Lists;
 
 public class Commands implements Listener {
@@ -40,14 +40,14 @@ public class Commands implements Listener {
 
 		int amount = Integer.parseInt(command[3]);
 
-		Optional<XMaterial> item = XMaterial.matchXMaterial(itemName);
+		Optional<XMaterialUtil> item = XMaterialUtil.matchXMaterial(itemName);
 
 		if (item == null || !item.isPresent() || item.get() == null)
 			return;
 
-		XMaterial material = item.get();
+		XMaterialUtil material = item.get();
 
-		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(material))
+		if (!ItemHandler.getInstance().hasEditedStackSize(material))
 			return;
 
 		if (isDamageable(material.get())) {
@@ -91,14 +91,14 @@ public class Commands implements Listener {
 
 		int amount = Integer.parseInt(command[3]);
 
-		Optional<XMaterial> item = XMaterial.matchXMaterial(itemName);
+		Optional<XMaterialUtil> item = XMaterialUtil.matchXMaterial(itemName);
 
 		if (item == null || !item.isPresent() || item.get() == null)
 			return;
 
-		XMaterial material = item.get();
+		XMaterialUtil material = item.get();
 
-		if (!ItemHandler.getInstance().getCachedMaterialSizes().containsKey(material))
+		if (!ItemHandler.getInstance().hasEditedStackSize(material))
 			return;
 
 		if (isDamageable(material.get())) {

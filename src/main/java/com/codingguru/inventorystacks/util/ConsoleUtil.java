@@ -42,4 +42,16 @@ public class ConsoleUtil {
 	public static void warning(String message) {
 		CONSOLE.sendMessage(ChatColor.RED + message);
 	}
+
+	public static void debug(String message) {
+		InventoryStacks plugin = InventoryStacks.getInstance();
+
+		if (plugin == null)
+			return;
+
+		if (!plugin.getConfig().getBoolean("debug-mode", false))
+			return;
+
+		CONSOLE.sendMessage(ChatColor.GRAY + "[InventoryStacks-Debug] " + ChatColor.WHITE + message);
+	}
 }

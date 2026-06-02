@@ -18,7 +18,7 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionType;
 
 import com.codingguru.inventorystacks.util.VersionUtil;
-import com.cryptomorin.xseries.XMaterial;
+import com.codingguru.inventorystacks.util.XMaterialUtil;
 
 public class BlockDispense implements Listener {
 
@@ -48,7 +48,7 @@ public class BlockDispense implements Listener {
 
 		e.setCancelled(true);
 
-		Material mud = XMaterial.matchXMaterial("MUD").map(XMaterial::get).orElse(null);
+		Material mud = XMaterialUtil.matchXMaterial("MUD").map(XMaterialUtil::get).orElse(null);
 		if (mud == null)
 			return;
 
@@ -68,7 +68,7 @@ public class BlockDispense implements Listener {
 		inSlot.setAmount(inSlot.getAmount() - 1);
 		inv.setItem(slot, inSlot.getAmount() > 0 ? inSlot : null);
 
-		Material glassBottle = XMaterial.matchXMaterial("GLASS_BOTTLE").map(XMaterial::get).orElse(null);
+		Material glassBottle = XMaterialUtil.matchXMaterial("GLASS_BOTTLE").map(XMaterialUtil::get).orElse(null);
 		if (glassBottle != null) {
 			Map<Integer, ItemStack> overflow = inv.addItem(new ItemStack(glassBottle, 1));
 			overflow.values().forEach(item -> dispenserBlock.getWorld()
@@ -81,7 +81,7 @@ public class BlockDispense implements Listener {
 		if (item == null)
 			return false;
 
-		if (item.getType() != XMaterial.matchXMaterial("POTION").map(XMaterial::get).orElse(null))
+		if (item.getType() != XMaterialUtil.matchXMaterial("POTION").map(XMaterialUtil::get).orElse(null))
 			return false;
 
 		if (!(item.getItemMeta() instanceof PotionMeta))

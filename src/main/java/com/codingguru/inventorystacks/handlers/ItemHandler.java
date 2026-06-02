@@ -23,7 +23,7 @@ import com.codingguru.inventorystacks.util.ReflectionLegacyUtil;
 import com.codingguru.inventorystacks.util.ServerTypeUtil;
 import com.codingguru.inventorystacks.util.StackSizeApplierUtil;
 import com.codingguru.inventorystacks.util.VersionUtil;
-import com.cryptomorin.xseries.XMaterial;
+import com.codingguru.inventorystacks.util.XMaterialUtil;
 import com.google.common.collect.Maps;
 
 @SuppressWarnings("deprecation")
@@ -32,8 +32,10 @@ public class ItemHandler {
 	private static final ItemHandler INSTANCE = new ItemHandler();
 	private final static InventoryStacks PLUGIN = InventoryStacks.getInstance();
 
-	private final Map<XMaterial, Integer> cachedDefaultStackSizes = Maps.newHashMap();
-	private final Map<XMaterial, Integer> cachedUpdatedStackSizes = Maps.newHashMap();
+	private final Map<XMaterialUtil, Integer> cachedDefaultStackSizes = Maps.newHashMap();
+	private final Map<XMaterialUtil, Integer> cachedUpdatedStackSizes = Maps.newHashMap();
+	private final Map<Material, Integer> cachedUpdatedDirectMaterialSizes = Maps.newHashMap();
+	private final Set<String> loggedUnsupportedMaterials = new HashSet<>();
 
 	private VersionUtil serverVersion;
 	private ServerTypeUtil serverType;
@@ -66,6 +68,10 @@ public class ItemHandler {
 				+ ItemHandler.getInstance().getServerType().toString());
 		ConsoleUtil.message(ChatColor.GREEN + "Stack Sizing Mode: " + ChatColor.YELLOW
 				+ (applier.isModernApi() ? "ItemMeta API (1.20.5+)" : "Legacy NMS"));
+		if (StackSizeApplierUtil.isGeyserCompatibilityEnabled() && StackSizeApplierUtil.isGeyserPresent()) {
+			ConsoleUtil.message(ChatColor.GREEN + "Geyser/Floodgate Support: " + ChatColor.YELLOW
+					+ "enabled (using Legacy NMS for Bedrock compatibility)");
+		}
 		ConsoleUtil.message("");
 
 		applyConfiguredStacks();
@@ -84,6 +90,10 @@ public class ItemHandler {
 		String majorMinor = parts[0] + "." + parts[1];
 
 		if (versionFound.equalsIgnoreCase("craftbukkit")) {
+			if (majorMinor.equals("26.1") || majorMinor.equals("1.26")) {
+				serverVersion = VersionUtil.v1_26;
+				return true;
+			}
 			if (majorMinor.equals("1.21")) {
 				serverVersion = VersionUtil.v1_21;
 				return true;
@@ -128,41 +138,91 @@ public class ItemHandler {
 	}
 
 	public boolean hasUpdatedStack(ItemStack stack) {
-		XMaterial xMat = XMaterial.matchXMaterial(stack);
-
-		if (xMat == null)
+		if (stack == null || stack.getType() == Material.AIR)
 			return false;
 
-		return cachedUpdatedStackSizes.containsKey(xMat);
+		XMaterialUtil xMat = matchXMaterialSafely(stack);
+
+		if (xMat != null)
+			return cachedUpdatedStackSizes.containsKey(xMat);
+
+		return cachedUpdatedDirectMaterialSizes.containsKey(stack.getType());
 	}
 
 	public void applyItem(boolean isStartUp, ItemStack stack) {
-		XMaterial xMat = XMaterial.matchXMaterial(stack);
-
-		if (xMat == null)
+		if (stack == null || stack.getType() == Material.AIR)
 			return;
 
-		int amount = cachedUpdatedStackSizes.get(xMat);
+		XMaterialUtil xMat = matchXMaterialSafely(stack);
+
+		if (xMat != null) {
+			Integer amount = cachedUpdatedStackSizes.get(xMat);
+			if (amount == null)
+				return;
+
+			applier.applyItem(isStartUp, stack, amount);
+			return;
+		}
+
+		Integer amount = cachedUpdatedDirectMaterialSizes.get(stack.getType());
+		if (amount == null)
+			return;
+
 		applier.applyItem(isStartUp, stack, amount);
+	}
+
+	private XMaterialUtil matchXMaterialSafely(ItemStack stack) {
+		try {
+			return XMaterialUtil.matchXMaterial(stack);
+		} catch (IllegalArgumentException ex) {
+			debugUnsupportedMaterial(stack.getType(), ex);
+			return null;
+		}
+	}
+
+	private XMaterialUtil matchXMaterialSafely(Material material) {
+		try {
+			return XMaterialUtil.matchXMaterial(material);
+		} catch (IllegalArgumentException ex) {
+			debugUnsupportedMaterial(material, ex);
+			return null;
+		}
+	}
+
+	private void debugUnsupportedMaterial(Material material, Exception ex) {
+		if (material == null)
+			return;
+
+		String key = material.name().toUpperCase();
+
+		if (!loggedUnsupportedMaterials.add(key))
+			return;
+
+		ConsoleUtil.debug("Unsupported XMaterial mapping detected for '" + material.name()
+				+ "' on server version " + getServerVersion() + ". Falling back to direct Material handling.");
+		ConsoleUtil.debug("Root cause: " + ex.getMessage());
 	}
 
 	public boolean hasEditedStackSize(Material material) {
 		if (material == Material.AIR)
 			return false;
 
-		XMaterial xMaterial = XMaterial.matchXMaterial(material);
+		XMaterialUtil xMaterial = matchXMaterialSafely(material);
 
+		if (xMaterial != null)
+			return hasEditedStackSize(xMaterial);
+
+		return cachedUpdatedDirectMaterialSizes.containsKey(material);
+	}
+
+	public boolean hasEditedStackSize(XMaterialUtil xMaterial) {
 		if (xMaterial == null)
 			return false;
 
-		return hasEditedStackSize(xMaterial);
-	}
-
-	public boolean hasEditedStackSize(XMaterial xMaterial) {
 		return cachedUpdatedStackSizes.containsKey(xMaterial);
 	}
 
-	public void cacheMaterialStackSize(XMaterial xMaterial, int newStackSize, int oldStackSize) {
+	public void cacheMaterialStackSize(XMaterialUtil xMaterial, int newStackSize, int oldStackSize) {
 		cachedUpdatedStackSizes.putIfAbsent(xMaterial, newStackSize);
 
 		if (applier.isModernApi()) // no need to cache default stack size
@@ -171,10 +231,32 @@ public class ItemHandler {
 		cachedDefaultStackSizes.putIfAbsent(xMaterial, oldStackSize);
 	}
 
+	public void cacheMaterialStackSize(Material material, int newStackSize) {
+		if (material == null || material == Material.AIR)
+			return;
+
+		cachedUpdatedDirectMaterialSizes.putIfAbsent(material, newStackSize);
+	}
+
+	@Deprecated
+	public void cacheMaterial(XMaterialUtil xMaterial, int oldStackSize) {
+		if (xMaterial == null)
+			return;
+
+		cachedDefaultStackSizes.putIfAbsent(xMaterial, oldStackSize);
+	}
+
+	@Deprecated
+	public void applyStackSizeToNmsItem(Object nmsItem, int size) {
+		ReflectionLegacyUtil.applyStackSizeToNmsItem(nmsItem, Material.AIR, size);
+	}
+
 	public void reloadInventoryStacks() {
 		resetMaterialsToDefaultValues();
 		cachedDefaultStackSizes.clear();
 		cachedUpdatedStackSizes.clear();
+		cachedUpdatedDirectMaterialSizes.clear();
+		loggedUnsupportedMaterials.clear();
 		applyConfiguredStacks();
 	}
 
@@ -188,11 +270,21 @@ public class ItemHandler {
 				String matName = e.getKey();
 				int size = e.getValue();
 
-				XMaterial xMat = XMaterial.matchXMaterial(matName).orElse(null);
+				XMaterialUtil xMat = XMaterialUtil.matchXMaterial(matName).orElse(null);
 
 				if (xMat == null) {
-					ConsoleUtil.warning(ChatColor.RED + "The Item: " + matName
-							+ " does not exist. Check MATERIAL_LIST.txt for all up to date item names.");
+					Material directMaterial = resolveMaterialByName(matName);
+
+					if (directMaterial == null || !isItem(directMaterial)) {
+						ConsoleUtil.warning(ChatColor.RED + "The Item: " + matName
+								+ " does not exist. Check MATERIAL_LIST.txt for all up to date item names.");
+						continue;
+					}
+
+					cacheMaterialStackSize(directMaterial, size);
+					applier.applyItem(true, new ItemStack(directMaterial), size);
+					ConsoleUtil.info(ChatColor.YELLOW + "Successfully set " + directMaterial.name() + " stack size to: " + size
+							+ " (direct Material fallback)");
 					continue;
 				}
 
@@ -222,9 +314,29 @@ public class ItemHandler {
 		}
 	}
 
+	private Material resolveMaterialByName(String materialName) {
+		if (materialName == null || materialName.trim().isEmpty())
+			return null;
+
+		String normalized = materialName.trim().toUpperCase();
+
+		Material matched = Material.getMaterial(normalized);
+		if (matched != null)
+			return matched;
+
+		matched = Material.matchMaterial(materialName);
+		if (matched != null)
+			return matched;
+
+		if (!normalized.startsWith("MINECRAFT:"))
+			return null;
+
+		return Material.matchMaterial(normalized.substring("MINECRAFT:".length()));
+	}
+
 	private Map<String, Integer> resolveConfiguredItems(Collection<String> keys) {
 		Map<String, Integer> resolved = new HashMap<>();
-		XMaterial[] allMaterials = XMaterial.VALUES;
+		XMaterialUtil[] allMaterials = XMaterialUtil.VALUES;
 
 		for (String key : keys) {
 			if (key == null)
@@ -237,17 +349,29 @@ public class ItemHandler {
 				continue;
 
 			int stackSize = validateStackSize(PLUGIN.getConfig().getInt("items." + key), key);
+			String patternInput = resolveItemGroupPattern(key);
 
 			final Pattern pattern;
 
 			try {
-				pattern = Pattern.compile(key, Pattern.CASE_INSENSITIVE);
+				pattern = Pattern.compile(patternInput, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException ex) {
 				ConsoleUtil.warning(ChatColor.RED + "Invalid regex in items: '" + key + "': " + ex.getDescription());
 				continue;
 			}
 
-			for (XMaterial material : allMaterials) {
+			for (XMaterialUtil material : allMaterials) {
+				String name = material.name();
+
+				if (pattern.matcher(name).matches()) {
+					resolved.putIfAbsent(name.toUpperCase(), stackSize);
+				}
+			}
+
+			for (Material material : Material.values()) {
+				if (material == null || !isItem(material))
+					continue;
+
 				String name = material.name();
 
 				if (pattern.matcher(name).matches()) {
@@ -259,10 +383,99 @@ public class ItemHandler {
 		return resolved;
 	}
 
+	private String resolveItemGroupPattern(String key) {
+		String normalized = key.trim().toUpperCase();
+
+		switch (normalized) {
+		case "BEDS":
+		case "BED":
+			return "^.*_BED$";
+		case "POTIONS":
+		case "POTION":
+			return "^(POTION|SPLASH_POTION|LINGERING_POTION)$";
+		case "STEWS":
+		case "STEW":
+			return "^(MUSHROOM_STEW|RABBIT_STEW|SUSPICIOUS_STEW|BEETROOT_SOUP)$";
+		case "BUCKETS":
+		case "BUCKET":
+			return "^(BUCKET|.*_BUCKET)$";
+		case "BOATS":
+		case "BOAT":
+			return "^(.*_BOAT|.*_CHEST_BOAT|.*_RAFT|.*_CHEST_RAFT)$";
+		case "MINECARTS":
+		case "MINECART":
+			return "^(MINECART|.*_MINECART)$";
+		case "TOOLS":
+		case "TOOL":
+			return "^(SHEARS|FISHING_ROD|BRUSH|FLINT_AND_STEEL|.*_(PICKAXE|AXE|SHOVEL|HOE))$";
+		case "WEAPONS":
+		case "WEAPON":
+			return "^(BOW|CROSSBOW|TRIDENT|MACE|.*_SWORD|.*_AXE)$";
+		case "ARMOR":
+			return "^(ELYTRA|TURTLE_HELMET|.*_(HELMET|CHESTPLATE|LEGGINGS|BOOTS|HORSE_ARMOR))$";
+		case "HORSE_ARMOR":
+			return "^.*_HORSE_ARMOR$";
+		case "DYES":
+		case "DYE":
+			return "^.*_DYE$";
+		case "SIGNS":
+		case "SIGN":
+			return "^.*(_SIGN|_HANGING_SIGN)$";
+		case "DOORS":
+		case "DOOR":
+			return "^.*_DOOR$";
+		case "TRAPDOORS":
+		case "TRAPDOOR":
+			return "^.*_TRAPDOOR$";
+		case "BUTTONS":
+		case "BUTTON":
+			return "^.*_BUTTON$";
+		case "PRESSURE_PLATES":
+		case "PRESSURE_PLATE":
+			return "^.*_PRESSURE_PLATE$";
+		case "FENCES":
+		case "FENCE":
+			return "^.*(_FENCE|_FENCE_GATE)$";
+		case "SLABS":
+		case "SLAB":
+			return "^.*_SLAB$";
+		case "STAIRS":
+		case "STAIR":
+			return "^.*_STAIRS$";
+		case "WALLS":
+		case "WALL":
+			return "^.*_WALL$";
+		case "CARPETS":
+		case "CARPET":
+			return "^.*_CARPET$";
+		case "BANNERS":
+		case "BANNER":
+			return "^.*_BANNER$";
+		case "MUSIC_DISCS":
+		case "MUSIC_DISC":
+		case "DISCS":
+		case "DISC":
+			return "^MUSIC_DISC_.*$";
+		case "SPAWN_EGGS":
+		case "SPAWN_EGG":
+			return "^.*_SPAWN_EGG$";
+		case "ARROWS":
+		case "ARROW":
+			return "^(ARROW|SPECTRAL_ARROW|TIPPED_ARROW)$";
+		case "FIREWORKS":
+		case "FIREWORK":
+			return "^(FIREWORK_ROCKET|FIREWORK_STAR)$";
+		case "FOOD":
+			return "^(APPLE|BAKED_POTATO|BEEF|BEETROOT|BEETROOT_SOUP|BREAD|CARROT|CHICKEN|CHORUS_FRUIT|COD|COOKED_BEEF|COOKED_CHICKEN|COOKED_COD|COOKED_MUTTON|COOKED_PORKCHOP|COOKED_RABBIT|COOKED_SALMON|COOKIE|DRIED_KELP|ENCHANTED_GOLDEN_APPLE|GLOW_BERRIES|GOLDEN_APPLE|GOLDEN_CARROT|HONEY_BOTTLE|MELON_SLICE|MUSHROOM_STEW|MUTTON|POISONOUS_POTATO|PORKCHOP|POTATO|PUFFERFISH|PUMPKIN_PIE|RABBIT|RABBIT_STEW|ROTTEN_FLESH|SALMON|SPIDER_EYE|SUSPICIOUS_STEW|SWEET_BERRIES|TROPICAL_FISH)$";
+		default:
+			return key;
+		}
+	}
+
 	private void updateAllItems(Set<String> exemptMaterials, int stackSize) {
 		Set<Material> processed = new HashSet<>();
 
-		for (XMaterial xMat : XMaterial.VALUES) {
+		for (XMaterialUtil xMat : XMaterialUtil.VALUES) {
 			if (!xMat.isSupported())
 				continue;
 
@@ -281,6 +494,22 @@ public class ItemHandler {
 			cacheMaterialStackSize(xMat, stackSize, mat.getMaxStackSize());
 			applier.applyItem(true, xMat.parseItem(), stackSize);
 			ConsoleUtil.info(ChatColor.YELLOW + "Successfully set " + mat.name() + " stack size to: " + stackSize);
+		}
+
+		for (Material mat : Material.values()) {
+			if (mat == null || !isItem(mat))
+				continue;
+
+			if (exemptMaterials.contains(mat.name().toUpperCase()))
+				continue;
+
+			if (!processed.add(mat))
+				continue;
+
+			cacheMaterialStackSize(mat, stackSize);
+			applier.applyItem(true, new ItemStack(mat), stackSize);
+			ConsoleUtil.info(ChatColor.YELLOW + "Successfully set " + mat.name() + " stack size to: " + stackSize
+					+ " (direct Material fallback)");
 		}
 	}
 
@@ -317,7 +546,7 @@ public class ItemHandler {
 		if (applier.isModernApi())
 			return;
 
-		for (Map.Entry<XMaterial, Integer> entry : cachedDefaultStackSizes.entrySet()) {
+		for (Map.Entry<XMaterialUtil, Integer> entry : cachedDefaultStackSizes.entrySet()) {
 			int defaultSize = entry.getValue();
 			applier.applyItem(true, entry.getKey().parseItem(), defaultSize);
 		}

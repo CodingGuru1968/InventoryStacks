@@ -9,7 +9,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 import com.codingguru.inventorystacks.scheduler.ChangeItemInHandWithItemTask;
-import com.cryptomorin.xseries.XMaterial;
+import com.codingguru.inventorystacks.util.XMaterialUtil;
 
 public class BlockPlace implements Listener {
 
@@ -30,7 +30,7 @@ public class BlockPlace implements Listener {
 			holding = player.getInventory().getItemInOffHand();
 		}
 
-		if (holding.getType() != XMaterial.POWDER_SNOW_BUCKET.get())
+		if (holding.getType() != XMaterialUtil.POWDER_SNOW_BUCKET.get())
 			return;
 
 		int amount = holding.getAmount();
@@ -42,7 +42,7 @@ public class BlockPlace implements Listener {
 		clone.setAmount(amount - 1);
 
 		ChangeItemInHandWithItemTask changeItemTask = new ChangeItemInHandWithItemTask(e.getPlayer(), clone,
-				new ItemStack(XMaterial.BUCKET.get()), XMaterial.BUCKET.get());
+				new ItemStack(XMaterialUtil.BUCKET.get()), XMaterialUtil.BUCKET.get());
 		changeItemTask.runTaskLater(itemChangeDelay);
 	}
 }
