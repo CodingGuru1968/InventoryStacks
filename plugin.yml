@@ -1,0 +1,14 @@
+name: InventoryStacks
+version: 3.0.1
+api-version: 1.13
+main: com.codingguru.inventorystacks.InventoryStacks
+authors: [CodingGuru, SzaBee13]
+softdepend: [Geyser-Spigot, Geyser-Bukkit, GeyserMC, floodgate]
+folia-supported: true
+commands:
+    stack:
+     description: Stack all items in your inventory.
+    stacks:
+     description: Reload inventory stacks.
+    inventorystacks:
+     description: Reload inventory stacks.
