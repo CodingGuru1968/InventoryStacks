@@ -4,7 +4,17 @@ check-for-updates: true # Check for new plugin updates
 
 # Enables extra console logging for troubleshooting
 # Recommended to keep false unless actively debugging
+
 debug-mode: false
+
+# Minecraft 1.20.5+ ONLY
+# Permission based stacking (disabled by default)
+# STACKS.USE
+# This only applies to inventory click events
+
+use-permission:
+  enabled: false
+  auto-stack-cleanup: true # Clean up stacks on players who don't have permission
 
 # Use mini messages
 # Allows for clickable links, actions and more.
@@ -51,9 +61,20 @@ auto-stack-cleanup: true
 
 item-change-delay: 2
 
+# Minecraft 1.20.5+ ONLY
+# WorldGuard region support
+# Use this section if you only want to apply item stacks in specific regions
+
+worldguard:
+  enabled: false
+  hopper-support: false # This is disabled by default due to a high server load (could cause lag, enable with caution)
+  auto-stack-cleanup: true # Removes stacks not inside of WorldGuard regions (can cause higher server load)
+  enabled-regions: # Regions stacking will be allowed in
+  - ExampleRegion
+
 # This setting will enable a max stack amount for ALL items in the game and make them all the same size
 
-max-stack-for-all-items:
+max-stack-for-all-items: 
   enabled: false # Disabled by default
   amount: 1
   whitelist: # This is a whitelist of items that won't be included

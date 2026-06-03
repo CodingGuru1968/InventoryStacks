@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 
 import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
+import com.codingguru.inventorystacks.hooks.WorldGuardHook;
 import com.codingguru.inventorystacks.util.MessagesUtil;
 
 public class ReloadCmd implements CommandExecutor {
@@ -31,6 +32,7 @@ public class ReloadCmd implements CommandExecutor {
 
 		InventoryStacks.getInstance().reloadConfig();
 		ItemHandler.getInstance().reloadInventoryStacks();
+		WorldGuardHook.setupWorldGuard();
 		MessagesUtil.sendMessage(sender, MessagesUtil.RELOAD.toString());
 		return false;
 	}

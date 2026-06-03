@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.codingguru</groupId>
 	<artifactId>inventorystacks</artifactId>
-	<version>3.0.1</version>
+	<version>3.2</version>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -15,6 +15,10 @@
 		<repository>
 			<id>papermc</id>
 			<url>https://repo.papermc.io/repository/maven-public/</url>
+		</repository>
+		<repository>
+			<id>sk89q-repo</id>
+			<url>https://maven.enginehub.org/repo/</url>
 		</repository>
 	</repositories>
 
@@ -42,9 +46,10 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.github.cryptomorin</groupId>
-			<artifactId>XSeries</artifactId>
-			<version>13.6.0</version>
+			<groupId>com.sk89q.worldguard</groupId>
+			<artifactId>worldguard-bukkit</artifactId>
+			<version>7.0.17</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
@@ -60,34 +65,6 @@
 					<filters>
 						<filter>
 							<artifact>*:*</artifact>
-							<excludes>
-								<exclude>META-INF/license/**</exclude>
-								<exclude>META-INF/*</exclude>
-								<exclude>META-INF/maven/**</exclude>
-								<exclude>LICENSE</exclude>
-								<exclude>NOTICE</exclude>
-								<exclude>/*.txt</exclude>
-								<exclude>/*.txt</exclude>
-								<exclude>build.properties</exclude>
-								<exclude>com/cryptomorin/xseries/XEnchantment*</exclude>
-								<exclude>com/cryptomorin/xseries/XEntityType*</exclude>
-								<exclude>com/cryptomorin/xseries/XEntity*</exclude>
-								<exclude>com/cryptomorin/xseries/XSound*</exclude>
-								<exclude>com/cryptomorin/xseries/XBiome*</exclude>
-								<exclude>com/cryptomorin/xseries/NMSExtras*</exclude>
-								<exclude>com/cryptomorin/xseries/NoteBlockMusic*</exclude>
-								<exclude>
-									com/cryptomorin/xseries/SkullCacheListener*</exclude>
-								<exclude>com/cryptomorin/xseries/art/**</exclude>
-								<exclude>com/cryptomorin/xseries/profiles/**</exclude>
-								<exclude>com/cryptomorin/xseries/reflection/**</exclude>
-								<exclude>com/cryptomorin/xseries/particles/**</exclude>
-								<exclude>com/cryptomorin/xseries/messages/**</exclude>
-								<exclude>com/cryptomorin/xseries/inventory/**</exclude>
-								<exclude>com/cryptomorin/xseries/paper/**</exclude>
-								<exclude>com/cryptomorin/xseries/XTag*</exclude>
-								<exclude>com/cryptomorin/xseries/XWorldBorder*</exclude>
-							</excludes>
 						</filter>
 					</filters>
 				</configuration>

@@ -1,6 +1,8 @@
 package com.codingguru.inventorystacks.listeners.itemmeta;
 
+import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -17,6 +19,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
+import com.codingguru.inventorystacks.hooks.WorldGuardHook;
 import com.codingguru.inventorystacks.scheduler.Schedule;
 
 public class UpdateItemMetaListener implements Listener {
@@ -26,53 +29,70 @@ public class UpdateItemMetaListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onInventoryClick(InventoryClickEvent e) {
-		callNow(e.getCurrentItem());
+		Player player = e.getWhoClicked() instanceof Player ? (Player) e.getWhoClicked() : null;
+		Location loc = WorldGuardHook.isEnabled() ? e.getWhoClicked().getLocation() : null;
+		callNow(player, loc, e.getCurrentItem());
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onEntityPickup(EntityPickupItemEvent e) {
-		callNow(e.getItem().getItemStack());
+		Player player = e.getEntity() instanceof Player ? (Player) e.getEntity() : null;
+		Location loc = WorldGuardHook.isEnabled() ? e.getEntity().getLocation() : null;
+		callNow(player, loc, e.getItem().getItemStack());
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onInventoryPickupItem(InventoryPickupItemEvent e) {
-		callNow(e.getItem().getItemStack());
+		Location loc = WorldGuardHook.isEnabled() ? WorldGuardHook.getLocationFromInventory(e.getInventory()) : null;
+		callNow(null, loc, e.getItem().getItemStack());
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onInventoryMove(InventoryMoveItemEvent e) {
-		callNow(e.getItem());
+		if (!WorldGuardHook.isEnabled()) {
+			callNow(null, null, e.getItem());
+			return;
+		}
+
+		if (!InventoryStacks.getInstance().getConfig().getBoolean("worldguard.hopper-support", false))
+			return;
+
+		callNow(null, WorldGuardHook.getLocationFromInventory(e.getDestination()), e.getItem());
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onBlockDispense(BlockDispenseEvent e) {
-		callLater(e.getItem());
+		Location loc = WorldGuardHook.isEnabled() ? e.getBlock().getLocation() : null;
+		callLater(loc, e.getItem());
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onItemSpawn(ItemSpawnEvent e) {
-		callLater(e.getEntity().getItemStack());
+		Location loc = WorldGuardHook.isEnabled() ? e.getLocation() : null;
+		callLater(loc, e.getEntity().getItemStack());
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onPrepareCrafter(CrafterCraftEvent e) {
-		callLater(e.getResult());
+		Location loc = WorldGuardHook.isEnabled() ? e.getBlock().getLocation() : null;
+		callLater(loc, e.getResult());
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onFurnaceSmelt(FurnaceSmeltEvent e) {
-		callLater(e.getResult());
+		Location loc = WorldGuardHook.isEnabled() ? e.getBlock().getLocation() : null;
+		callLater(loc, e.getResult());
 	}
 
-	private void callNow(ItemStack stack) {
-		if (!shouldHandle(stack))
+	private void callNow(Player player, Location loc, ItemStack stack) {
+		if (!shouldHandle(player, loc, stack))
 			return;
 
 		ItemHandler.getInstance().applyItem(false, stack);
 	}
 
-	private void callLater(ItemStack stack) {
-		if (!shouldHandle(stack))
+	private void callLater(Location loc, ItemStack stack) {
+		if (!shouldHandle(null, loc, stack))
 			return;
 
 		final int key = System.identityHashCode(stack);
@@ -80,7 +100,7 @@ public class UpdateItemMetaListener implements Listener {
 		if (!scheduled.add(key))
 			return;
 
-		Schedule stackApplyTask = new Schedule() {
+		new Schedule() {
 			@Override
 			public void run() {
 				try {
@@ -89,20 +109,36 @@ public class UpdateItemMetaListener implements Listener {
 					scheduled.remove(key);
 				}
 			}
-		};
-
-		stackApplyTask.runTaskLater(1L);
+		}.runTaskLater(1L);
 	}
 
-	private boolean shouldHandle(ItemStack stack) {
-		if (stack == null)
+	private boolean shouldHandle(Player player, Location loc, ItemStack stack) {
+		if (stack == null || stack.getType().isAir()) {
 			return false;
+		}
 
-		if (stack.getType().isAir())
-			return false;
+		FileConfiguration config = InventoryStacks.getInstance().getConfig();
 
 		if (!ItemHandler.getInstance().hasUpdatedStack(stack)) {
-			handleCleanup(stack);
+			if (config.getBoolean("auto-stack-cleanup", true)) {
+				handleCleanup(stack);
+			}
+			return false;
+		}
+
+		if (config.getBoolean("use-permission.enabled", false) && player != null) {
+			if (!player.hasPermission("STACKS.*") && !player.hasPermission("STACKS.USE")) {
+				if (config.getBoolean("use-permission.auto-stack-cleanup", true)) {
+					handleCleanup(stack);
+				}
+				return false;
+			}
+		}
+
+		if (WorldGuardHook.isEnabled() && !WorldGuardHook.isInTargetRegion(loc)) {
+			if (config.getBoolean("worldguard.auto-stack-cleanup", true)) {
+				handleCleanup(stack);
+			}
 			return false;
 		}
 
@@ -110,17 +146,8 @@ public class UpdateItemMetaListener implements Listener {
 	}
 
 	private void handleCleanup(ItemStack stack) {
-		FileConfiguration config = InventoryStacks.getInstance().getConfig();
-
-		if (!config.getBoolean("auto-stack-cleanup"))
-			return;
-
 		ItemMeta meta = stack.getItemMeta();
-
-		if (meta == null)
-			return;
-
-		if (!meta.hasMaxStackSize())
+		if (meta == null || !meta.hasMaxStackSize())
 			return;
 
 		meta.setMaxStackSize(null);

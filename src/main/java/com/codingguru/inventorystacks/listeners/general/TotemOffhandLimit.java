@@ -160,6 +160,7 @@ public class TotemOffhandLimit implements Listener {
 		e.setCurrentItem(remaining);
 	}
 
+	@SuppressWarnings("deprecation")
 	private void decreaseCursor(InventoryClickEvent e, ItemStack source) {
 		int newAmount = source.getAmount() - 1;
 

@@ -17,6 +17,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import com.codingguru.inventorystacks.InventoryStacks;
+import com.codingguru.inventorystacks.hooks.WorldGuardHook;
 import com.codingguru.inventorystacks.items.StackSizeApplier;
 import com.codingguru.inventorystacks.util.ConsoleUtil;
 import com.codingguru.inventorystacks.util.ReflectionLegacyUtil;
@@ -68,10 +69,16 @@ public class ItemHandler {
 				+ ItemHandler.getInstance().getServerType().toString());
 		ConsoleUtil.message(ChatColor.GREEN + "Stack Sizing Mode: " + ChatColor.YELLOW
 				+ (applier.isModernApi() ? "ItemMeta API (1.20.5+)" : "Legacy NMS"));
+
+		if (WorldGuardHook.setupWorldGuard()) {
+			ConsoleUtil.message(ChatColor.GREEN + "WorldGuard Support: " + ChatColor.YELLOW + "enabled (using regions)");
+		}
+
 		if (StackSizeApplierUtil.isGeyserCompatibilityEnabled() && StackSizeApplierUtil.isGeyserPresent()) {
 			ConsoleUtil.message(ChatColor.GREEN + "Geyser/Floodgate Support: " + ChatColor.YELLOW
 					+ "enabled (using Legacy NMS for Bedrock compatibility)");
 		}
+
 		ConsoleUtil.message("");
 
 		applyConfiguredStacks();
@@ -198,8 +205,8 @@ public class ItemHandler {
 		if (!loggedUnsupportedMaterials.add(key))
 			return;
 
-		ConsoleUtil.debug("Unsupported XMaterial mapping detected for '" + material.name()
-				+ "' on server version " + getServerVersion() + ". Falling back to direct Material handling.");
+		ConsoleUtil.debug("Unsupported XMaterial mapping detected for '" + material.name() + "' on server version "
+				+ getServerVersion() + ". Falling back to direct Material handling.");
 		ConsoleUtil.debug("Root cause: " + ex.getMessage());
 	}
 
@@ -283,8 +290,8 @@ public class ItemHandler {
 
 					cacheMaterialStackSize(directMaterial, size);
 					applier.applyItem(true, new ItemStack(directMaterial), size);
-					ConsoleUtil.info(ChatColor.YELLOW + "Successfully set " + directMaterial.name() + " stack size to: " + size
-							+ " (direct Material fallback)");
+					ConsoleUtil.info(ChatColor.YELLOW + "Successfully set " + directMaterial.name() + " stack size to: "
+							+ size + " (direct Material fallback)");
 					continue;
 				}
 

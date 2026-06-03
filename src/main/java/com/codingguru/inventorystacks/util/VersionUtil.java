@@ -36,7 +36,7 @@ public enum VersionUtil {
     v1_20("net.minecraft.world.item.Item", "net.minecraft.world.item.Items", "d", 99, 22),
 
     v1_21("net.minecraft.world.item.Item", "net.minecraft.world.item.Items", null, 99, 23),
-
+    
     v1_26("net.minecraft.world.item.Item", "net.minecraft.world.item.Items", null, 99, 24);
 
     private final String itemClass;

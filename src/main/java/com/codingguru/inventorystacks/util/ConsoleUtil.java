@@ -30,7 +30,7 @@ public class ConsoleUtil {
 		CONSOLE.sendMessage("");
 		CONSOLE.sendMessage(ChatColor.GREEN + "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
 	}
-	
+
 	public static void message(String message) {
 		CONSOLE.sendMessage(message);
 	}

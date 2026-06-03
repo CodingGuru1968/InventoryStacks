@@ -1,10 +1,10 @@
 name: InventoryStacks
-version: 2.6.2-BETA
+version: 3.2
 api-version: 1.13
 main: com.codingguru.inventorystacks.InventoryStacks
-authors: [CodingGuru]
-folia-supported: true
+authors: [CodingGuru, SzaBee13, CodeNameJessica]
 softdepend: [Geyser-Spigot, Geyser-Bukkit, GeyserMC, floodgate]
+folia-supported: true
 commands:
     stack:
      description: Stack all items in your inventory.
