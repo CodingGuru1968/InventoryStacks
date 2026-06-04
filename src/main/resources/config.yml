@@ -61,6 +61,30 @@ auto-stack-cleanup: true
 
 item-change-delay: 2
 
+# Dropped item hologram display
+# Shows amount, item name and despawn timer above dropped items.
+# This can be used as a lightweight replacement for item-count holograms.
+
+item-hologram:
+  enabled: false
+  update-interval-ticks: 10
+  y-offset: 0.6
+  show-despawn-timer: true
+  despawn-ticks: 6000
+  # Max amount a dropped stack should merge into for nearby identical items.
+  # Keep at 64 for vanilla behavior, or set higher (for example 4096) to keep
+  # merging nearby drops and reset despawn time when they merge.
+  # This merge behavior works even when item-hologram.enabled is false.
+  ground-merge-max-amount: 64
+  # Radius in blocks used to find nearby identical dropped items to merge.
+  # Larger values can merge wider item clusters but may cost more per item spawn.
+  # This merge behavior works even when item-hologram.enabled is false.
+  ground-merge-radius-blocks: 16
+  # Debug logging for dropped-item merge and pickup flow.
+  # Logs reasons when merges are skipped and summaries when merges/pickups happen.
+  ground-merge-debug: false
+  format: '&e%amount%x &f%item% &7(%time%)'
+
 # Minecraft 1.20.5+ ONLY
 # WorldGuard region support
 # Use this section if you only want to apply item stacks in specific regions

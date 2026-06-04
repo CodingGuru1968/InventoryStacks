@@ -7,8 +7,8 @@ import org.bukkit.Location;
 import org.bukkit.inventory.Inventory;
 
 import com.codingguru.inventorystacks.InventoryStacks;
+import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.util.ConsoleUtil;
-import com.codingguru.inventorystacks.util.VersionUtil;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.managers.RegionManager;
@@ -26,7 +26,7 @@ public final class WorldGuardHook {
 		isEnabled = Bukkit.getPluginManager().getPlugin("WorldGuard") != null
 				&& InventoryStacks.getInstance().getConfig().getBoolean("worldguard.enabled", false);
 
-		if (!VersionUtil.v1_20.isServerVersionHigher()) {
+		if (!ItemHandler.getInstance().isUsingModernAPI()) {
 			ConsoleUtil
 					.warning("WorldGuard support was found and enabled but cannot be used on old server version API.");
 			return false;

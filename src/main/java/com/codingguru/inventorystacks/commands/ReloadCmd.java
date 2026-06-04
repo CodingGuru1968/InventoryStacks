@@ -31,8 +31,10 @@ public class ReloadCmd implements CommandExecutor {
 		}
 
 		InventoryStacks.getInstance().reloadConfig();
-		ItemHandler.getInstance().reloadInventoryStacks();
 		WorldGuardHook.setupWorldGuard();
+		InventoryStacks.getInstance().reloadMessaging();
+		InventoryStacks.getInstance().reloadItemHologramManager();
+		ItemHandler.getInstance().reloadInventoryStacks();
 		MessagesUtil.sendMessage(sender, MessagesUtil.RELOAD.toString());
 		return false;
 	}

@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 
 import com.codingguru.inventorystacks.InventoryStacks;
@@ -71,12 +72,22 @@ public class ItemHandler {
 				+ (applier.isModernApi() ? "ItemMeta API (1.20.5+)" : "Legacy NMS"));
 
 		if (WorldGuardHook.setupWorldGuard()) {
-			ConsoleUtil.message(ChatColor.GREEN + "WorldGuard Support: " + ChatColor.YELLOW + "enabled (using regions)");
+			ConsoleUtil
+					.message(ChatColor.GREEN + "WorldGuard Support: " + ChatColor.YELLOW + "enabled (using regions)");
 		}
 
 		if (StackSizeApplierUtil.isGeyserCompatibilityEnabled() && StackSizeApplierUtil.isGeyserPresent()) {
 			ConsoleUtil.message(ChatColor.GREEN + "Geyser/Floodgate Support: " + ChatColor.YELLOW
 					+ "enabled (using Legacy NMS for Bedrock compatibility)");
+		}
+
+		if (InventoryStacks.getInstance().getConfig().getBoolean("item-hologram.enabled", false)) {
+			FileConfiguration config = InventoryStacks.getInstance().getConfig();
+			int cap = config.getInt("item-hologram.ground-merge-max-amount", 64);
+			double radius = config.getDouble("item-hologram.ground-merge-radius-blocks", 16.0D);
+			boolean debug = config.getBoolean("item-hologram.ground-merge-debug", false);
+			ConsoleUtil.message(ChatColor.GREEN + "Item Stack Merging: " + ChatColor.YELLOW + "enabled (" + "cap=" + cap
+					+ " radius=" + radius + " debug=" + debug + ")");
 		}
 
 		ConsoleUtil.message("");

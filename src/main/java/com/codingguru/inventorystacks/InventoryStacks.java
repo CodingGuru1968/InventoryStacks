@@ -14,9 +14,12 @@ import com.codingguru.inventorystacks.listeners.correction.PlayerInteract;
 import com.codingguru.inventorystacks.listeners.correction.PlayerItemConsume;
 import com.codingguru.inventorystacks.listeners.general.BlockPlace;
 import com.codingguru.inventorystacks.listeners.general.Commands;
+import com.codingguru.inventorystacks.listeners.general.DroppedItemMerge;
+import com.codingguru.inventorystacks.listeners.general.ItemHologram;
 import com.codingguru.inventorystacks.listeners.general.PlayerItemDamage;
 import com.codingguru.inventorystacks.listeners.general.TotemOffhandLimit;
-import com.codingguru.inventorystacks.listeners.itemmeta.UpdateItemMetaListener;
+import com.codingguru.inventorystacks.listeners.itemmeta.UpdateItemMeta;
+import com.codingguru.inventorystacks.managers.ItemHologramManager;
 import com.codingguru.inventorystacks.managers.SettingsManager;
 import com.codingguru.inventorystacks.util.ConsoleUtil;
 
@@ -26,6 +29,7 @@ public class InventoryStacks extends JavaPlugin {
 
 	private static InventoryStacks INSTANCE;
 	private SettingsManager settingsManager;
+	private ItemHologramManager itemHologramManager;
 	private BukkitAudiences adventureAPI;
 
 	public void onEnable() {
@@ -44,6 +48,9 @@ public class InventoryStacks extends JavaPlugin {
 		settingsManager = new SettingsManager();
 		settingsManager.setup(this);
 
+		itemHologramManager = new ItemHologramManager(this);
+		itemHologramManager.enable();
+		
 		if (getConfig().getBoolean("use-mini-message")) {
 			this.adventureAPI = BukkitAudiences.create(this);
 		}
@@ -54,9 +61,11 @@ public class InventoryStacks extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(new PlayerItemDamage(itemChangeDelay), this);
 		getServer().getPluginManager().registerEvents(new BlockPlace(itemChangeDelay), this);
 		getServer().getPluginManager().registerEvents(new TotemOffhandLimit(), this);
-
+		getServer().getPluginManager().registerEvents(new ItemHologram(), this);
+		getServer().getPluginManager().registerEvents(new DroppedItemMerge(), this);
+		
 		if (ItemHandler.getInstance().isUsingModernAPI()) {
-			getServer().getPluginManager().registerEvents(new UpdateItemMetaListener(), this);
+			getServer().getPluginManager().registerEvents(new UpdateItemMeta(), this);
 		} else { // LEGACY SUPPORT
 			getServer().getPluginManager().registerEvents(new PlayerBucketEmpty(itemChangeDelay), this);
 			getServer().getPluginManager().registerEvents(new PlayerItemConsume(itemChangeDelay), this);
@@ -69,9 +78,43 @@ public class InventoryStacks extends JavaPlugin {
 
 		ConsoleUtil.sendPluginEndSetup();
 	}
+	
+	public void onDisable() {
+		if (itemHologramManager != null) {
+			itemHologramManager.disable();
+		}
+
+		closeAdventure();
+	}
+
+	public void reloadMessaging() {
+		closeAdventure();
+
+		if (getConfig().getBoolean("use-mini-message")) {
+			this.adventureAPI = BukkitAudiences.create(this);
+		}
+	}
+
+	public void reloadItemHologramManager() {
+		if (itemHologramManager != null) {
+			itemHologramManager.reload();
+		}
+	}
+	
+	private void closeAdventure() {
+		if (this.adventureAPI == null)
+			return;
+
+		this.adventureAPI.close();
+		this.adventureAPI = null;
+	}
 
 	public BukkitAudiences getAdventure() {
 		return this.adventureAPI;
+	}
+	
+	public ItemHologramManager getItemHologramManager() {
+		return itemHologramManager;
 	}
 
 	public SettingsManager getSettingsManager() {
