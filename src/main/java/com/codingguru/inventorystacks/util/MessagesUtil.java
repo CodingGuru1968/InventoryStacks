@@ -18,9 +18,9 @@ public enum MessagesUtil {
 	DISALLOW_ANVIL_STACK("&cYou cannot use multiple stacked items in an anvil.", true),
 	PREVENT_SHIFT_COMBINING_DAMAGEABLE_ITEMS("&cYou cannot combine this item WITH SHIFT due to a durability item glitch.", true),
 	COMMAND_DISABLED("&cThis command has been disabled.", false),
+	BUNDLE_FIX("&cYou cannot put stacked damageable items into bundles due to client limitations.", true),
 	RELOAD("&aYou have successfully reloaded all configuration files.", true),
-	INCORRECT_USAGE("&cCorrect Usage: %command%", true),
-	IN_GAME("&cYou can only execute this in game.", false),
+	INCORRECT_USAGE("&cCorrect Usage: %command%", true), IN_GAME("&cYou can only execute this in game.", false),
 	NUMBER_EXCEPTION("&cYou must enter a correct amount.", false),
 	PLAYER_NOT_FOUND("&cNo entity was found with the id: %id%", false),
 	NO_PERMISSION("&cYou do not have permission to execute this command.", true);
@@ -54,18 +54,18 @@ public enum MessagesUtil {
 		} else {
 			message = defaultValue;
 		}
-		
+
 		if (!InventoryStacks.getInstance().getConfig().getBoolean("use-mini-message")) {
 			message = ColorUtil.replace(message);
 		}
-		
+
 		return message;
 	}
-	
+
 	public static void broadcast(String message) {
 		Bukkit.getOnlinePlayers().stream().forEach(player -> sendMessage(player, message));
 	}
-	
+
 	public static void sendMiniMessage(CommandSender sender, String replacedString) {
 		Audience audience = InventoryStacks.getInstance().getAdventure().sender(sender);
 		MiniMessage mm = MiniMessage.miniMessage();
@@ -76,12 +76,12 @@ public enum MessagesUtil {
 	public static void sendMessage(CommandSender sender, String replacedString) {
 		if (replacedString.equalsIgnoreCase(""))
 			return;
-		
-		if (InventoryStacks.getInstance().getConfig().getBoolean("use-mini-message")) {			
+
+		if (InventoryStacks.getInstance().getConfig().getBoolean("use-mini-message")) {
 			sendMiniMessage(sender, replacedString);
 			return;
 		}
-		
+
 		String[] message = replacedString.split("\\\\n");
 
 		for (String msg : message) {

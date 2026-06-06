@@ -1,5 +1,5 @@
 name: InventoryStacks
-version: 3.3
+version: 3.3.2
 api-version: 1.13
 main: com.codingguru.inventorystacks.InventoryStacks
 authors: [CodingGuru, SzaBee13, CodeNameJessica]

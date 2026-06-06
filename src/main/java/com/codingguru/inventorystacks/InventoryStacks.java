@@ -6,6 +6,7 @@ import com.codingguru.inventorystacks.commands.ReloadCmd;
 import com.codingguru.inventorystacks.commands.StackCmd;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.listeners.correction.BlockDispense;
+import com.codingguru.inventorystacks.listeners.correction.BundleFix;
 import com.codingguru.inventorystacks.listeners.correction.FurnaceBurn;
 import com.codingguru.inventorystacks.listeners.correction.InventoryClick;
 import com.codingguru.inventorystacks.listeners.correction.InventoryMoveItem;
@@ -63,7 +64,8 @@ public class InventoryStacks extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(new TotemOffhandLimit(), this);
 		getServer().getPluginManager().registerEvents(new ItemHologram(), this);
 		getServer().getPluginManager().registerEvents(new DroppedItemMerge(), this);
-		
+		getServer().getPluginManager().registerEvents(new BundleFix(), this);
+
 		if (ItemHandler.getInstance().isUsingModernAPI()) {
 			getServer().getPluginManager().registerEvents(new UpdateItemMeta(), this);
 		} else { // LEGACY SUPPORT
