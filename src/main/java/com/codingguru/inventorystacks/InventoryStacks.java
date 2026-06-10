@@ -13,6 +13,7 @@ import com.codingguru.inventorystacks.listeners.correction.InventoryMoveItem;
 import com.codingguru.inventorystacks.listeners.correction.PlayerBucketEmpty;
 import com.codingguru.inventorystacks.listeners.correction.PlayerInteract;
 import com.codingguru.inventorystacks.listeners.correction.PlayerItemConsume;
+import com.codingguru.inventorystacks.listeners.correction.TotemFix;
 import com.codingguru.inventorystacks.listeners.general.BlockPlace;
 import com.codingguru.inventorystacks.listeners.general.Commands;
 import com.codingguru.inventorystacks.listeners.general.DroppedItemMerge;
@@ -65,13 +66,14 @@ public class InventoryStacks extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(new ItemHologram(), this);
 		getServer().getPluginManager().registerEvents(new DroppedItemMerge(), this);
 		getServer().getPluginManager().registerEvents(new BundleFix(), this);
+		getServer().getPluginManager().registerEvents(new InventoryClick(), this);
+		getServer().getPluginManager().registerEvents(new TotemFix(), this);
 
 		if (ItemHandler.getInstance().isUsingModernAPI()) {
 			getServer().getPluginManager().registerEvents(new UpdateItemMeta(), this);
 		} else { // LEGACY SUPPORT
 			getServer().getPluginManager().registerEvents(new PlayerBucketEmpty(itemChangeDelay), this);
 			getServer().getPluginManager().registerEvents(new PlayerItemConsume(itemChangeDelay), this);
-			getServer().getPluginManager().registerEvents(new InventoryClick(), this);
 			getServer().getPluginManager().registerEvents(new InventoryMoveItem(), this);
 			getServer().getPluginManager().registerEvents(new FurnaceBurn(), this);
 			getServer().getPluginManager().registerEvents(new PlayerInteract(), this);

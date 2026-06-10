@@ -50,13 +50,37 @@ public final class ReflectionLegacyUtil {
 
 			maxStackComponentKey = maxStackField.get(null);
 
-			itemComponentsAccessor = itemClass.getDeclaredMethod("f");
+			Class<?> dataComponentMapClass = Class.forName("net.minecraft.core.component.DataComponentMap");
+
+			try {
+				itemComponentsAccessor = itemClass.getDeclaredMethod("f");
+			} catch (NoSuchMethodException e) {
+				for (Method m : itemClass.getDeclaredMethods()) {
+					if (m.getParameterCount() == 0 && m.getReturnType() == dataComponentMapClass) {
+						itemComponentsAccessor = m;
+						break;
+					}
+				}
+				if (itemComponentsAccessor == null)
+					throw new NoSuchMethodException(
+							"Could not find DataComponentMap accessor on " + itemClass.getName());
+			}
 			itemComponentsAccessor.setAccessible(true);
 
-			itemComponentsField = itemClass.getDeclaredField("c");
+			try {
+				itemComponentsField = itemClass.getDeclaredField("c");
+			} catch (NoSuchFieldException e) {
+				for (Field f : itemClass.getDeclaredFields()) {
+					if (f.getType() == dataComponentMapClass) {
+						itemComponentsField = f;
+						break;
+					}
+				}
+				if (itemComponentsField == null)
+					throw new NoSuchFieldException("Could not find DataComponentMap field on " + itemClass.getName());
+			}
 			itemComponentsField.setAccessible(true);
 
-			Class<?> dataComponentMapClass = Class.forName("net.minecraft.core.component.DataComponentMap");
 			Class<?> builderClass = Class.forName("net.minecraft.core.component.DataComponentMap$a");
 
 			builderFactory = dataComponentMapClass.getDeclaredMethod("a");

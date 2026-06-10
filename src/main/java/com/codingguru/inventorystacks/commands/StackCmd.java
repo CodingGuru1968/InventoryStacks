@@ -178,7 +178,7 @@ public class StackCmd implements CommandExecutor {
 
 		ItemMeta currentMeta = stack.getItemMeta();
 
-		if (currentMeta == null)
+		if (currentMeta == null || !currentMeta.hasMaxStackSize())
 			return stack.getMaxStackSize();
 
 		return currentMeta.getMaxStackSize();
