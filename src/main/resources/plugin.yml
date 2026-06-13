@@ -1,9 +1,9 @@
 name: InventoryStacks
-version: 3.3.4
+version: 3.3.5
 api-version: 1.13
 main: com.codingguru.inventorystacks.InventoryStacks
 authors: [CodingGuru, SzaBee13, CodeNameJessica]
-softdepend: [Geyser-Spigot, Geyser-Bukkit, GeyserMC, floodgate]
+softdepend: [WorldGuard]
 folia-supported: true
 commands:
     stack:

@@ -40,14 +40,6 @@ stack-command:
   
 use-legacy-reflection: false
 
-# Bedrock clients connected through Geyser/Floodgate are more reliable with
-# global Material stack sizes than per-item ItemMeta stack size components.
-# When TRUE and Geyser/Floodgate is installed, this automatically uses legacy
-# reflection stack handling even on Minecraft 1.20.5+.
-
-geyser-support:
-  auto-use-legacy-reflection: true
-
 # Minecraft 1.20.5+ ONLY
 # This setting only applies when "use-legacy-reflection" is false
 # When TRUE, an item that is not listed in "items" section, it will reset to default vanilla amount
