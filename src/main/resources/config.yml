@@ -100,9 +100,9 @@ worldguard:
 
 max-stack-for-all-items: 
   enabled: false # Disabled by default
-  amount: 1
+  amount: 99
   whitelist: # This is a whitelist of items that won't be included
-  - DIAMOND_PICKAXE
+  - BED
 
 # Max Item Stack Sizes
 # Format = MATERIAL NAME : STACK SIZE
@@ -114,7 +114,7 @@ max-stack-for-all-items:
 # (This list of items will also work with max-stack-for-all-items if enabled)
 
 items:
-  POTION: 16
+  BEDS: 16
   # BEDS: 16
   # POTIONS: 16
   # STEWS: 16

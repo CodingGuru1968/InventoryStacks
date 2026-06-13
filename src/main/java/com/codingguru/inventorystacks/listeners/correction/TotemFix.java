@@ -20,6 +20,9 @@ public class TotemFix implements Listener {
 	public void onShiftClick(InventoryClickEvent e) {
 		if (!VersionUtil.v1_9_R1.isServerVersionHigher())
 			return;
+		
+		if (!ItemHandler.getInstance().hasEditedStackSize(Material.TOTEM_OF_UNDYING))
+			return;
 
 		if (!(e.getClickedInventory() instanceof PlayerInventory))
 			return;
@@ -27,7 +30,7 @@ public class TotemFix implements Listener {
 		if (e.getAction() != InventoryAction.MOVE_TO_OTHER_INVENTORY)
 			return;
 
-		if (!ItemHandler.getInstance().hasEditedStackSize(Material.TOTEM_OF_UNDYING))
+		if (e.getClick() != ClickType.SHIFT_LEFT)
 			return;
 
 		Player player = (Player) e.getWhoClicked();
@@ -37,10 +40,15 @@ public class TotemFix implements Listener {
 			return;
 
 		ItemStack clicked = e.getCurrentItem();
+
 		if (clicked == null || clicked.getType() != Material.TOTEM_OF_UNDYING)
 			return;
 
 		ItemStack offhand = player.getInventory().getItemInOffHand();
+
+		if (offhand != null && offhand.getType() != Material.AIR && offhand.getType() != Material.TOTEM_OF_UNDYING)
+			return;
+
 		int offhandAmount = offhand == null || offhand.getType() == Material.AIR ? 0 : offhand.getAmount();
 		int maxStack = clicked.hasItemMeta() && clicked.getItemMeta().hasMaxStackSize()
 				? clicked.getItemMeta().getMaxStackSize()
@@ -70,13 +78,13 @@ public class TotemFix implements Listener {
 		if (!VersionUtil.v1_9_R1.isServerVersionHigher())
 			return;
 
+		if (!ItemHandler.getInstance().hasEditedStackSize(Material.TOTEM_OF_UNDYING))
+			return;
+		
 		if (e.getSlot() != 40)
 			return;
 
 		if (e.getClick() != ClickType.LEFT)
-			return;
-
-		if (!ItemHandler.getInstance().hasEditedStackSize(Material.TOTEM_OF_UNDYING))
 			return;
 
 		ItemStack cursor = e.getCursor();
@@ -87,14 +95,18 @@ public class TotemFix implements Listener {
 		switch (e.getAction()) {
 		case PLACE_ALL:
 		case SWAP_WITH_CURSOR:
+		case PLACE_ONE:
 			break;
 		default:
 			return;
 		}
 
 		Player player = (Player) e.getWhoClicked();
-
 		ItemStack offhand = player.getInventory().getItemInOffHand();
+
+		if (offhand != null && offhand.getType() != Material.AIR && offhand.getType() != Material.TOTEM_OF_UNDYING)
+			return;
+
 		int offhandAmount = offhand == null ? 0 : offhand.getAmount();
 		int cursorAmount = cursor.getAmount();
 		int total = offhandAmount + cursorAmount;

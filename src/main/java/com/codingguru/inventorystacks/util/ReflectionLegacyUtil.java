@@ -32,7 +32,7 @@ public final class ReflectionLegacyUtil {
 	public static void setup() {
 		try {
 			Class<?> itemClass = Class.forName(SERVER_VERSION.getItemClass());
-
+			
 			if (!SERVER_VERSION.usesDataComponents()) {
 				legacyMaxStackField = itemClass.getDeclaredField(SERVER_VERSION.getLegacyStackField());
 				legacyMaxStackField.setAccessible(true);
@@ -49,7 +49,6 @@ public final class ReflectionLegacyUtil {
 			}
 
 			maxStackComponentKey = maxStackField.get(null);
-
 			Class<?> dataComponentMapClass = Class.forName("net.minecraft.core.component.DataComponentMap");
 
 			try {

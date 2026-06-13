@@ -24,7 +24,6 @@ public final class StackSizeApplierUtil {
 	public static boolean shouldUseLegacyReflection() {
 		if (InventoryStacks.getInstance().getConfig().getBoolean("use-legacy-reflection", false))
 			return true;
-
 		return isGeyserCompatibilityEnabled() && isGeyserPresent();
 	}
 

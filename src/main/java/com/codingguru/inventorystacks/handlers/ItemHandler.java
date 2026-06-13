@@ -76,11 +76,6 @@ public class ItemHandler {
 					.message(ChatColor.GREEN + "WorldGuard Support: " + ChatColor.YELLOW + "enabled (using regions)");
 		}
 
-		if (StackSizeApplierUtil.isGeyserCompatibilityEnabled() && StackSizeApplierUtil.isGeyserPresent()) {
-			ConsoleUtil.message(ChatColor.GREEN + "Geyser/Floodgate Support: " + ChatColor.YELLOW
-					+ "enabled (using Legacy NMS for Bedrock compatibility)");
-		}
-
 		if (InventoryStacks.getInstance().getConfig().getBoolean("item-hologram.enabled", false)) {
 			FileConfiguration config = InventoryStacks.getInstance().getConfig();
 			int cap = config.getInt("item-hologram.ground-merge-max-amount", 64);
