@@ -1,7 +1,5 @@
 package com.codingguru.inventorystacks.util;
 
-import java.util.Objects;
-
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -38,7 +36,7 @@ public class ItemUtil {
 			if (s.getType() != needle.getType())
 				continue;
 
-			if (!Objects.equals(s.getItemMeta(), needle.getItemMeta()))
+			if (!ItemStackComparisonUtil.hasSameMetaIgnoringMaxStackSize(s, needle))
 				continue;
 
 			if (s.getAmount() <= 1) {

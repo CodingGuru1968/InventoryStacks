@@ -11,6 +11,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
+import com.codingguru.inventorystacks.util.ItemStackComparisonUtil;
 import com.codingguru.inventorystacks.util.MessagesUtil;
 import com.codingguru.inventorystacks.util.VersionUtil;
 
@@ -98,7 +99,8 @@ public class StackCmd implements CommandExecutor {
 			if (foundItem == null || foundItem.getType() == Material.AIR || foundItem.getAmount() <= 0)
 				continue;
 
-			if (foundItem.isSimilar(item) && slot != player.getInventory().getHeldItemSlot()) {
+			if (ItemStackComparisonUtil.isSimilarIgnoringMaxStackSize(foundItem, item)
+					&& slot != player.getInventory().getHeldItemSlot()) {
 				amount = amount + foundItem.getAmount();
 				player.getInventory().clear(slot);
 			}
@@ -150,7 +152,7 @@ public class StackCmd implements CommandExecutor {
 					if (item2 == null || item2.getAmount() <= 0)
 						continue;
 
-					if (item2.isSimilar(item)) {
+					if (ItemStackComparisonUtil.isSimilarIgnoringMaxStackSize(item2, item)) {
 						if (item2.getAmount() > neededUntilMax) {
 							item.setAmount(max);
 							item2.setAmount(item2.getAmount() - neededUntilMax);

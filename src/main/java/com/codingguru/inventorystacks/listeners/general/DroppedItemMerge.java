@@ -17,12 +17,12 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.scheduler.Schedule;
 import com.codingguru.inventorystacks.util.ConsoleUtil;
 import com.codingguru.inventorystacks.util.GroundStackUtil;
+import com.codingguru.inventorystacks.util.ItemStackComparisonUtil;
 
 public class DroppedItemMerge implements Listener {
 
@@ -352,9 +352,7 @@ public class DroppedItemMerge implements Listener {
 		if (other.getType().isAir())
 			return false;
 
-		ItemStack normalizedBase = normalizeForMerge(base);
-		ItemStack normalizedOther = normalizeForMerge(other);
-		return normalizedBase.isSimilar(normalizedOther);
+		return ItemStackComparisonUtil.isSimilarIgnoringMaxStackSize(base, other);
 	}
 
 	private void debug(String format, Object... args) {
@@ -375,25 +373,6 @@ public class DroppedItemMerge implements Listener {
 
 		return item.getUniqueId() + "(" + stack.getType().name() + "x" + stack.getAmount() + "/total="
 				+ GroundStackUtil.getTotal(item) + ")";
-	}
-
-	private ItemStack normalizeForMerge(ItemStack original) {
-		ItemStack normalized = original.clone();
-
-		if (!normalized.hasItemMeta())
-			return normalized;
-
-		ItemMeta meta = normalized.getItemMeta();
-
-		if (meta == null)
-			return normalized;
-
-		if (!meta.hasMaxStackSize())
-			return normalized;
-
-		meta.setMaxStackSize(null);
-		normalized.setItemMeta(meta);
-		return normalized;
 	}
 
 }

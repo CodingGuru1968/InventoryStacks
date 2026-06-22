@@ -1,7 +1,6 @@
 package com.codingguru.inventorystacks.listeners.correction;
 
 import java.util.Map;
-import java.util.Objects;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -17,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionType;
 
+import com.codingguru.inventorystacks.util.ItemStackComparisonUtil;
 import com.codingguru.inventorystacks.util.VersionUtil;
 import com.codingguru.inventorystacks.util.XMaterialUtil;
 
@@ -109,7 +109,7 @@ public class BlockDispense implements Listener {
 			if (s.getType() != needle.getType())
 				continue;
 
-			if (!Objects.equals(s.getItemMeta(), needle.getItemMeta()))
+			if (!ItemStackComparisonUtil.hasSameMetaIgnoringMaxStackSize(s, needle))
 				continue;
 
 			return i;

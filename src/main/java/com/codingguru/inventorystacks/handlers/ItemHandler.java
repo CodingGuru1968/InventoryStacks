@@ -469,6 +469,9 @@ public class ItemHandler {
 		case "DISCS":
 		case "DISC":
 			return "^MUSIC_DISC_.*$";
+		case "ENCHANTED_BOOKS":
+		case "ENCHANTED_BOOK":
+			return "^ENCHANTED_BOOK$";
 		case "SPAWN_EGGS":
 		case "SPAWN_EGG":
 			return "^.*_SPAWN_EGG$";
