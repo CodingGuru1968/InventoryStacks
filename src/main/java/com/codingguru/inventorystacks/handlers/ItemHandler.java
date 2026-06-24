@@ -103,7 +103,7 @@ public class ItemHandler {
 		String majorMinor = parts[0] + "." + parts[1];
 
 		if (versionFound.equalsIgnoreCase("craftbukkit")) {
-			if (majorMinor.equals("26.1") || majorMinor.equals("1.26")) {
+			if (majorMinor.equals("26.2") || majorMinor.equals("26.1") || majorMinor.equals("1.26")) {
 				serverVersion = VersionUtil.v1_26;
 				return true;
 			}
@@ -469,6 +469,9 @@ public class ItemHandler {
 		case "DISCS":
 		case "DISC":
 			return "^MUSIC_DISC_.*$";
+		case "ENCHANTED_BOOKS":
+		case "ENCHANTED_BOOK":
+			return "^ENCHANTED_BOOK$";
 		case "SPAWN_EGGS":
 		case "SPAWN_EGG":
 			return "^.*_SPAWN_EGG$";
