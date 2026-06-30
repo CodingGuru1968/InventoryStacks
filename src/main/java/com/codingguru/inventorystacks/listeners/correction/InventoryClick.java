@@ -86,7 +86,7 @@ public class InventoryClick implements Listener {
 		if (e.getCurrentItem() == null || e.getCurrentItem().getType() == Material.AIR)
 			return;
 
-		if (VersionUtil.v1_18_R1.isServerVersionHigher())
+		if (VersionUtil.v1_18_R1.isServerVersionHigher() && !ItemHandler.getInstance().useLegacyReflection())
 			return;
 
 		if (!InventoryStacks.getInstance().getConfig().getBoolean("update-inventory-on-merge"))
@@ -163,7 +163,7 @@ public class InventoryClick implements Listener {
 	@SuppressWarnings("deprecation")
 	@EventHandler(ignoreCancelled = true)
 	public void onPreventDurabilityDowngradeShiftMerge(InventoryClickEvent e) {
-		if (VersionUtil.v1_17_R1.isServerVersionHigher())
+		if (VersionUtil.v1_17_R1.isServerVersionHigher() && !ItemHandler.getInstance().useLegacyReflection())
 			return;
 
 		if (!InventoryStacks.getInstance().getConfig().getBoolean("prevent-shift-damageable-items-stack"))

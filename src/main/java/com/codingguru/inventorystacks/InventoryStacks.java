@@ -40,8 +40,9 @@ public class InventoryStacks extends JavaPlugin {
 		ConsoleUtil.sendPluginStartSetup();
 
 		saveDefaultConfig();
-		
-		ItemHandler.getInstance().setup();
+
+		if (!ItemHandler.getInstance().setup())
+			return;
 
 		getCommand("stack").setExecutor(new StackCmd());
 		getCommand("stacks").setExecutor(new ReloadCmd());
@@ -52,11 +53,11 @@ public class InventoryStacks extends JavaPlugin {
 
 		itemHologramManager = new ItemHologramManager(this);
 		itemHologramManager.enable();
-		
+
 		if (getConfig().getBoolean("use-mini-message")) {
 			this.adventureAPI = BukkitAudiences.create(this);
 		}
-		
+
 		long itemChangeDelay = InventoryStacks.getInstance().getConfig().getLong("item-change-delay", 2L);
 
 		getServer().getPluginManager().registerEvents(new Commands(), this);
@@ -82,7 +83,7 @@ public class InventoryStacks extends JavaPlugin {
 
 		ConsoleUtil.sendPluginEndSetup();
 	}
-	
+
 	public void onDisable() {
 		if (itemHologramManager != null) {
 			itemHologramManager.disable();
@@ -104,7 +105,7 @@ public class InventoryStacks extends JavaPlugin {
 			itemHologramManager.reload();
 		}
 	}
-	
+
 	private void closeAdventure() {
 		if (this.adventureAPI == null)
 			return;
@@ -116,7 +117,7 @@ public class InventoryStacks extends JavaPlugin {
 	public BukkitAudiences getAdventure() {
 		return this.adventureAPI;
 	}
-	
+
 	public ItemHologramManager getItemHologramManager() {
 		return itemHologramManager;
 	}

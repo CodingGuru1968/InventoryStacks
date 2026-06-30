@@ -2,7 +2,7 @@ package com.codingguru.inventorystacks.util;
 
 import org.bukkit.inventory.meta.ItemMeta;
 
-import com.codingguru.inventorystacks.InventoryStacks;
+import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.items.ItemMetaStackSizeApplier;
 import com.codingguru.inventorystacks.items.LegacyNmsStackSizeApplier;
 import com.codingguru.inventorystacks.items.StackSizeApplier;
@@ -10,17 +10,11 @@ import com.codingguru.inventorystacks.items.StackSizeApplier;
 public final class StackSizeApplierUtil {
 
 	public static StackSizeApplier create() {
-		if (hasItemMetaSetMaxStackSize() && !shouldUseLegacyReflection()) {
+		if (hasItemMetaSetMaxStackSize() && !ItemHandler.getInstance().useLegacyReflection()) {
 			return new ItemMetaStackSizeApplier();
 		}
 
 		return new LegacyNmsStackSizeApplier();
-	}
-
-	public static boolean shouldUseLegacyReflection() {
-		if (InventoryStacks.getInstance().getConfig().getBoolean("use-legacy-reflection", false))
-			return true;
-		return false;
 	}
 
 	private static boolean hasItemMetaSetMaxStackSize() {

@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
+import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.scheduler.ChangeItemInHandTask;
 import com.codingguru.inventorystacks.scheduler.ChangeItemInHandWithItemTask;
 import com.codingguru.inventorystacks.util.VersionUtil;
@@ -61,12 +62,12 @@ public class PlayerBucketEmpty implements Listener {
 	@SuppressWarnings("deprecation")
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
 	public void onCauldronBucketUseLegacy(PlayerInteractEvent e) {
-		if (VersionUtil.v1_9_R1.isServerVersionHigher())
+		if (VersionUtil.v1_9_R1.isServerVersionHigher() && !ItemHandler.getInstance().useLegacyReflection())
 			return;
-		
+
 		if (e.getAction() != Action.RIGHT_CLICK_BLOCK)
 			return;
-		
+
 		if (e.getClickedBlock() == null)
 			return;
 
