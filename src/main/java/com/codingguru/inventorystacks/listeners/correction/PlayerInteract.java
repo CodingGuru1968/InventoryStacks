@@ -9,6 +9,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.util.VersionUtil;
 import com.codingguru.inventorystacks.util.XMaterialUtil;
 
@@ -16,7 +17,7 @@ public class PlayerInteract implements Listener {
 
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
 	public void onPlayerInteract(PlayerInteractEvent e) {
-		if (VersionUtil.v1_20.isServerVersionHigher())
+		if (VersionUtil.v1_20.isServerVersionHigher() && !ItemHandler.getInstance().useLegacyReflection())
 			return;
 
 		if (e.getAction() != Action.RIGHT_CLICK_BLOCK)
@@ -40,7 +41,7 @@ public class PlayerInteract implements Listener {
 
 		Jukebox jukebox = (Jukebox) e.getClickedBlock().getState();
 
-		if (jukebox.hasRecord())	
+		if (jukebox.hasRecord())
 			return;
 
 		e.setCancelled(true);

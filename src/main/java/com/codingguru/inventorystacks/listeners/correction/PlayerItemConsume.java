@@ -6,6 +6,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
 
+import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.scheduler.ChangeItemInHandWithItemTask;
 import com.codingguru.inventorystacks.util.ItemUtil;
 import com.codingguru.inventorystacks.util.VersionUtil;
@@ -21,7 +22,7 @@ public class PlayerItemConsume implements Listener {
 
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
 	public void onPlayerItemConsume(PlayerItemConsumeEvent e) {
-		if (VersionUtil.v1_21.isServerVersionHigher())
+		if (VersionUtil.v1_21.isServerVersionHigher() && !ItemHandler.getInstance().useLegacyReflection())
 			return;
 
 		if (e.getItem() == null)

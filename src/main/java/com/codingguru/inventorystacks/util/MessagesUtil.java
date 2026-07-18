@@ -11,26 +11,25 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 
 public enum MessagesUtil {
 
-	GIVEN_ITEM("Gave %amount% [%item%] to %id%", false),
-	HAND_ITEMS_STACKED("&aYou have successfully stacked all items in your hand.", true),
-	ALL_ITEMS_STACKED("&aYou have successfully stacked all items in your inventory.", true),
-	INVALID_STACK_TYPE("&c%type% is not a valid stack type. Use 'HAND' or 'ALL'.", true),
-	DISALLOW_ANVIL_STACK("&cYou cannot use multiple stacked items in an anvil.", true),
-	PREVENT_SHIFT_COMBINING_DAMAGEABLE_ITEMS("&cYou cannot combine this item WITH SHIFT due to a durability item glitch.", true),
-	COMMAND_DISABLED("&cThis command has been disabled.", false),
-	BUNDLE_FIX("&cYou cannot put stacked damageable items into bundles due to client limitations.", true),
-	RELOAD("&aYou have successfully reloaded all configuration files.", true),
-	INCORRECT_USAGE("&cCorrect Usage: %command%", true), IN_GAME("&cYou can only execute this in game.", false),
-	NUMBER_EXCEPTION("&cYou must enter a correct amount.", false),
-	PLAYER_NOT_FOUND("&cNo entity was found with the id: %id%", false),
-	NO_PERMISSION("&cYou do not have permission to execute this command.", true);
+	GIVEN_ITEM("Gave %amount% [%item%] to %id%"),
+	HAND_ITEMS_STACKED("&aYou have successfully stacked all items in your hand."),
+	ALL_ITEMS_STACKED("&aYou have successfully stacked all items in your inventory."),
+	INVALID_STACK_TYPE("&c%type% is not a valid stack type. Use 'HAND' or 'ALL'."),
+	DISALLOW_ANVIL_STACK("&cYou cannot use multiple stacked items in an anvil."),
+	PREVENT_SHIFT_COMBINING_DAMAGEABLE_ITEMS("&cYou cannot combine this item WITH SHIFT due to a durability item glitch."),
+	COMMAND_DISABLED("&cThis command has been disabled."),
+	BUNDLE_FIX("&cYou cannot put stacked damageable items into bundles due to client limitations."),
+	RELOAD("&aYou have successfully reloaded all configuration files."),
+	INCORRECT_USAGE("&cCorrect Usage: %command%"), 
+	IN_GAME("&cYou can only execute this in game."),
+	NUMBER_EXCEPTION("&cYou must enter a correct amount."),
+	PLAYER_NOT_FOUND("&cNo entity was found with the id: %id%"),
+	NO_PERMISSION("&cYou do not have permission to execute this command.");
 
 	private String defaultValue;
-	private boolean usePrefix;
 
-	MessagesUtil(String defaultValue, boolean usePrefix) {
+	MessagesUtil(String defaultValue) {
 		this.defaultValue = defaultValue;
-		this.usePrefix = usePrefix;
 	}
 
 	public String getDefault() {
@@ -39,10 +38,6 @@ public enum MessagesUtil {
 
 	public String getPath() {
 		return this.name();
-	}
-
-	public boolean usePrefix() {
-		return this.usePrefix;
 	}
 
 	@Override

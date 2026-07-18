@@ -18,9 +18,9 @@ public class TotemFix implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onShiftClick(InventoryClickEvent e) {
-		if (!VersionUtil.v1_9_R1.isServerVersionHigher())
+		if (!VersionUtil.v1_11_R1.isServerVersionHigher())
 			return;
-		
+
 		if (!ItemHandler.getInstance().hasEditedStackSize(Material.TOTEM_OF_UNDYING))
 			return;
 
@@ -61,6 +61,7 @@ public class TotemFix implements Listener {
 		int total = offhandAmount + clicked.getAmount();
 
 		ItemStack newOffhand = clicked.clone();
+
 		if (total <= maxStack) {
 			newOffhand.setAmount(total);
 			player.getInventory().setItemInOffHand(newOffhand);
@@ -75,16 +76,19 @@ public class TotemFix implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onRegularClick(InventoryClickEvent e) {
-		if (!VersionUtil.v1_9_R1.isServerVersionHigher())
+		if (!VersionUtil.v1_11_R1.isServerVersionHigher())
 			return;
 
 		if (!ItemHandler.getInstance().hasEditedStackSize(Material.TOTEM_OF_UNDYING))
 			return;
-		
+
 		if (e.getSlot() != 40)
 			return;
 
 		if (e.getClick() != ClickType.LEFT)
+			return;
+
+		if (!(e.getClickedInventory() instanceof PlayerInventory))
 			return;
 
 		ItemStack cursor = e.getCursor();
@@ -94,18 +98,39 @@ public class TotemFix implements Listener {
 
 		switch (e.getAction()) {
 		case PLACE_ALL:
-		case SWAP_WITH_CURSOR:
 		case PLACE_ONE:
+		case SWAP_WITH_CURSOR:
 			break;
 		default:
 			return;
 		}
 
 		Player player = (Player) e.getWhoClicked();
+
 		ItemStack offhand = player.getInventory().getItemInOffHand();
 
-		if (offhand != null && offhand.getType() != Material.AIR && offhand.getType() != Material.TOTEM_OF_UNDYING)
+		boolean isOffhandEmpty = (offhand == null || offhand.getType() == Material.AIR);
+
+		if (!isOffhandEmpty && offhand.getType() != Material.TOTEM_OF_UNDYING) {
+			int cursorAmount = cursor.getAmount();
+			int maxStack = cursor.hasItemMeta() && cursor.getItemMeta().hasMaxStackSize()
+					? cursor.getItemMeta().getMaxStackSize()
+					: 1;
+
+			if (cursorAmount <= maxStack) {
+				e.setCancelled(true);
+				player.getInventory().setItemInOffHand(cursor.clone());
+				player.setItemOnCursor(offhand.clone());
+			}
 			return;
+		}
+
+		if (isOffhandEmpty) {
+			e.setCancelled(true);
+			player.getInventory().setItemInOffHand(cursor.clone());
+			player.setItemOnCursor(null);
+			return;
+		}
 
 		int offhandAmount = offhand == null ? 0 : offhand.getAmount();
 		int cursorAmount = cursor.getAmount();

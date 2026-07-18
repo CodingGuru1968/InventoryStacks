@@ -1,25 +1,20 @@
 # General Settings
-
 check-for-updates: true # Check for new plugin updates
 
 # Enables extra console logging for troubleshooting
 # Recommended to keep false unless actively debugging
-
 debug-mode: false
 
 # Minecraft 1.20.5+ ONLY
 # Permission based stacking (disabled by default)
 # STACKS.USE
 # This only applies to inventory click events
-
 use-permission:
   enabled: false
   auto-stack-cleanup: true # Clean up stacks on players who don't have permission
 
 # Use mini messages
 # Allows for clickable links, actions and more.
-# https://www.spigotmc.org/threads/minimessage-rich-text-messages-made-easy.433454/
-
 use-mini-message: false
 
 # Stack command
@@ -27,7 +22,6 @@ use-mini-message: false
 # Hand stacks all items player is holding
 # All stacks all the items in the player's inventory
 # Command = /stack or /stack [HAND/ALL]
-
 stack-command:
   enabled: true
   default-stack-type: 'HAND'
@@ -37,26 +31,22 @@ stack-command:
 # May improve performance on large servers with many custom stack updates
 # Known limitation: container GUIs may not reflect updated stack sizes (only visual)
 # Restart your server when toggling this setting
-  
 use-legacy-reflection: false
 
 # Minecraft 1.20.5+ ONLY
 # This setting only applies when "use-legacy-reflection" is false
 # When TRUE, an item that is not listed in "items" section, it will reset to default vanilla amount
 # This only applies when it has a custom stack amount to avoid overuse
-
 auto-stack-cleanup: true
   
 # Update rate for buckets, drinkable items, and damageable items
 # This is an option because on folia it needs more of a delay to work correctly
 # This is in ticks
-
 item-change-delay: 2
 
 # Dropped item hologram display
 # Shows amount, item name and despawn timer above dropped items.
 # This can be used as a lightweight replacement for item-count holograms.
-
 item-hologram:
   enabled: false
   update-interval-ticks: 10
@@ -80,7 +70,6 @@ item-hologram:
 # Minecraft 1.20.5+ ONLY
 # WorldGuard region support
 # Use this section if you only want to apply item stacks in specific regions
-
 worldguard:
   enabled: false
   hopper-support: false # This is disabled by default due to a high server load (could cause lag, enable with caution)
@@ -89,7 +78,6 @@ worldguard:
   - ExampleRegion
 
 # This setting will enable a max stack amount for ALL items in the game and make them all the same size
-
 max-stack-for-all-items: 
   enabled: false # Disabled by default
   amount: 99
@@ -104,7 +92,6 @@ max-stack-for-all-items:
 # PRESSURE_PLATES, FENCES, SLABS, STAIRS, WALLS, CARPETS, BANNERS,
 # MUSIC_DISCS, ENCHANTED_BOOKS, SPAWN_EGGS, ARROWS, FIREWORKS, FOOD
 # (This list of items will also work with max-stack-for-all-items if enabled)
-
 items:
   BEDS: 16
   # BEDS: 16
@@ -132,17 +119,14 @@ items:
 
 
 # Disallow stacked items/tools in anvils to be applied
-
 disallow-stacked-anvil-items: true
-    
+
 # Update players inventory after merging stacked items (not required for 1.18+)
 # This makes it look cleaner when items are stacked
-
 update-inventory-on-merge: true
 
 # This option prevents the glitch that happens when you combine a damageable item (not required for 1.17+)
 # Without this, the items could combine and then durability will also combine to undamaged items
-
 prevent-shift-combining-damageable-items: true
 
 # Make brewing stands not be able to stack potions (not required for 1.20.6+)

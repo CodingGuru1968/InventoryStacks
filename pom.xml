@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.codingguru</groupId>
 	<artifactId>inventorystacks</artifactId>
-	<version>3.3.5</version>
+	<version>3.4.1</version>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -59,9 +59,27 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
 				<version>3.4.1</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
 				<configuration>
-					<minimizeJar>false</minimizeJar>
+				<relocations>
+                    <relocation>
+                        <pattern>net.kyori</pattern>
+                        <shadedPattern>com.codingguru.inventorystacks.libs.net.kyori</shadedPattern>
+                    </relocation>
+                </relocations>
 					<createDependencyReducedPom>false</createDependencyReducedPom>
+					<transformers>
+						<transformer
+							implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+						</transformer>
+					</transformers>
 				</configuration>
 			</plugin>
 		</plugins>

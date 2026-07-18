@@ -42,7 +42,8 @@ public class ItemHandler {
 	private VersionUtil serverVersion;
 	private ServerTypeUtil serverType;
 	private StackSizeApplier applier;
-
+	private boolean useLegacyReflection;
+	
 	private ItemHandler() {
 	}
 
@@ -50,16 +51,20 @@ public class ItemHandler {
 		return INSTANCE;
 	}
 
-	public void setup() {
+	public boolean setup() {
 		if (!setupServerVersion()) {
 			String pkg = Bukkit.getServer().getClass().getPackage().getName();
 			String versionFound = pkg.substring(pkg.lastIndexOf('.') + 1);
 			ConsoleUtil.warning("THE VERSION: " + versionFound + " IS CURRENTLY UNSUPPORTED. DISABLING PLUGIN...");
-			Bukkit.getPluginManager().disablePlugin(InventoryStacks.getInstance());
-			return;
+			Bukkit.getScheduler().runTask(PLUGIN, () -> {
+				Bukkit.getPluginManager().disablePlugin(PLUGIN);
+			});
+			return false;
 		}
 
 		setupServerType();
+		
+		useLegacyReflection = PLUGIN.getConfig().getBoolean("use-legacy-reflection", false);
 
 		this.applier = StackSizeApplierUtil.create();
 		this.applier.setup();
@@ -88,7 +93,7 @@ public class ItemHandler {
 		ConsoleUtil.message("");
 
 		applyConfiguredStacks();
-
+		return true;
 	}
 
 	private boolean setupServerVersion() {
@@ -270,6 +275,7 @@ public class ItemHandler {
 		cachedUpdatedStackSizes.clear();
 		cachedUpdatedDirectMaterialSizes.clear();
 		loggedUnsupportedMaterials.clear();
+		useLegacyReflection = PLUGIN.getConfig().getBoolean("use-legacy-reflection", false);
 		applyConfiguredStacks();
 	}
 
@@ -574,5 +580,9 @@ public class ItemHandler {
 
 	public ServerTypeUtil getServerType() {
 		return serverType;
+	}
+	
+	public boolean useLegacyReflection() {
+		return useLegacyReflection;
 	}
 }
