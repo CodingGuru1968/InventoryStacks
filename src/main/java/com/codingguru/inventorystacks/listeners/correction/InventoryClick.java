@@ -133,33 +133,6 @@ public class InventoryClick implements Listener {
 		ItemUtil.addItem((Player) e.getWhoClicked(), newItem);
 	}
 
-	@EventHandler(ignoreCancelled = true)
-	public void onToolStackedClick(InventoryClickEvent e) {
-		if (e.getCurrentItem() == null || e.getCurrentItem().getType() == Material.AIR)
-			return;
-
-		if (e.getInventory().getType() != InventoryType.ANVIL)
-			return;
-
-		if (e.getSlotType() != SlotType.RESULT)
-			return;
-
-		if (!InventoryStacks.getInstance().getConfig().getBoolean("disallow-stacked-anvil-items"))
-			return;
-
-		ItemStack craftedItem = e.getInventory().getContents()[0];
-
-		if (craftedItem.getAmount() <= 1)
-			return;
-
-		if (!ItemHandler.getInstance().hasEditedStackSize(craftedItem.getType()))
-			return;
-
-		e.getWhoClicked().closeInventory();
-		e.setCancelled(true);
-		MessagesUtil.sendMessage(e.getWhoClicked(), MessagesUtil.DISALLOW_ANVIL_STACK.toString());
-	}
-
 	@SuppressWarnings("deprecation")
 	@EventHandler(ignoreCancelled = true)
 	public void onPreventDurabilityDowngradeShiftMerge(InventoryClickEvent e) {

@@ -13,13 +13,12 @@ import com.codingguru.inventorystacks.listeners.correction.InventoryMoveItem;
 import com.codingguru.inventorystacks.listeners.correction.PlayerBucketEmpty;
 import com.codingguru.inventorystacks.listeners.correction.PlayerInteract;
 import com.codingguru.inventorystacks.listeners.correction.PlayerItemConsume;
-import com.codingguru.inventorystacks.listeners.correction.TotemFix;
+import com.codingguru.inventorystacks.listeners.general.AnvilStack;
 import com.codingguru.inventorystacks.listeners.general.BlockPlace;
 import com.codingguru.inventorystacks.listeners.general.Commands;
 import com.codingguru.inventorystacks.listeners.general.DroppedItemMerge;
 import com.codingguru.inventorystacks.listeners.general.ItemHologram;
 import com.codingguru.inventorystacks.listeners.general.PlayerItemDamage;
-import com.codingguru.inventorystacks.listeners.general.TotemOffhandLimit;
 import com.codingguru.inventorystacks.listeners.itemmeta.UpdateItemMeta;
 import com.codingguru.inventorystacks.managers.ItemHologramManager;
 import com.codingguru.inventorystacks.managers.SettingsManager;
@@ -41,34 +40,41 @@ public class InventoryStacks extends JavaPlugin {
 
 		saveDefaultConfig();
 
+//		try {
+//			ConfigUpdater.update(this, "config.yml", new File(getDataFolder(), "config.yml"));
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//
+//		reloadConfig();
+		
 		if (!ItemHandler.getInstance().setup())
 			return;
+		
+		settingsManager = new SettingsManager();
+		settingsManager.setup(this);
 
 		getCommand("stack").setExecutor(new StackCmd());
 		getCommand("stacks").setExecutor(new ReloadCmd());
 		getCommand("inventorystacks").setExecutor(new ReloadCmd());
 
-		settingsManager = new SettingsManager();
-		settingsManager.setup(this);
-
 		itemHologramManager = new ItemHologramManager(this);
 		itemHologramManager.enable();
 
-		if (getConfig().getBoolean("use-mini-message")) {
+		if (getConfig().getBoolean("use-mini-message", false)) {
 			this.adventureAPI = BukkitAudiences.create(this);
 		}
 
-		long itemChangeDelay = InventoryStacks.getInstance().getConfig().getLong("item-change-delay", 2L);
+		long itemChangeDelay = getConfig().getLong("item-change-delay", 2L);
 
 		getServer().getPluginManager().registerEvents(new Commands(), this);
 		getServer().getPluginManager().registerEvents(new PlayerItemDamage(itemChangeDelay), this);
 		getServer().getPluginManager().registerEvents(new BlockPlace(itemChangeDelay), this);
-		getServer().getPluginManager().registerEvents(new TotemOffhandLimit(), this);
 		getServer().getPluginManager().registerEvents(new ItemHologram(), this);
 		getServer().getPluginManager().registerEvents(new DroppedItemMerge(), this);
 		getServer().getPluginManager().registerEvents(new BundleFix(), this);
 		getServer().getPluginManager().registerEvents(new InventoryClick(), this);
-		getServer().getPluginManager().registerEvents(new TotemFix(), this);
+		getServer().getPluginManager().registerEvents(new AnvilStack(), this);
 
 		if (ItemHandler.getInstance().isUsingModernAPI()) {
 			getServer().getPluginManager().registerEvents(new UpdateItemMeta(), this);

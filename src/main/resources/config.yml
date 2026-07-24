@@ -33,6 +33,9 @@ stack-command:
 # Restart your server when toggling this setting
 use-legacy-reflection: false
 
+# Disallow stacked items/tools in anvils to be applied
+disallow-stacked-anvil-items: true
+
 # Minecraft 1.20.5+ ONLY
 # This setting only applies when "use-legacy-reflection" is false
 # When TRUE, an item that is not listed in "items" section, it will reset to default vanilla amount
@@ -116,9 +119,6 @@ items:
 #                                                                          #
 ############################################################################
 
-
-# Disallow stacked items/tools in anvils to be applied
-disallow-stacked-anvil-items: true
 
 # Update players inventory after merging stacked items (not required for 1.18+)
 # This makes it look cleaner when items are stacked
