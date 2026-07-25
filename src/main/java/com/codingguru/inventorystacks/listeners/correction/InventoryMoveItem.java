@@ -11,12 +11,16 @@ import org.bukkit.inventory.ItemStack;
 import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.scheduler.FixBrewingStandTask;
+import com.codingguru.inventorystacks.util.VersionUtil;
 import com.codingguru.inventorystacks.util.XMaterialUtil;
 
 public class InventoryMoveItem implements Listener {
 
 	@EventHandler(ignoreCancelled = true)
 	public void onInventoryMoveItem(InventoryMoveItemEvent e) {
+		if (VersionUtil.v1_20.isServerVersionHigher() && !ItemHandler.getInstance().useLegacyReflection())
+			return;
+		
 		if (!InventoryStacks.getInstance().getConfig().getBoolean("one-potion-per-slot"))
 			return;
 

@@ -27,6 +27,9 @@ public class InventoryClick implements Listener {
 
 	@EventHandler(ignoreCancelled = true)
 	public void onBrewingStandShiftMove(InventoryClickEvent e) {
+		if (VersionUtil.v1_20.isServerVersionHigher() && !ItemHandler.getInstance().useLegacyReflection())
+			return;
+		
 		if (!InventoryStacks.getInstance().getConfig().getBoolean("one-potion-per-slot"))
 			return;
 

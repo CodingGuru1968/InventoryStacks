@@ -11,19 +11,18 @@ import org.bukkit.inventory.ItemStack;
 
 import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
+import com.codingguru.inventorystacks.util.DamageableUtil;
 import com.codingguru.inventorystacks.util.MessagesUtil;
 
 public class AnvilStack implements Listener {
 
 	@EventHandler
 	public void onInventoryClick(InventoryClickEvent event) {
-		if (!InventoryStacks.getInstance().getConfig().getBoolean("disallow-stacked-anvil-items")) {
+		if (!InventoryStacks.getInstance().getConfig().getBoolean("disallow-stacked-anvil-items")) 
 			return;
-		}
 
-		if (event.getView().getTopInventory().getType() != InventoryType.ANVIL) {
+		if (event.getView().getTopInventory().getType() != InventoryType.ANVIL) 
 			return;
-		}
 
 		int rawSlot = event.getRawSlot();
 		InventoryAction action = event.getAction();
@@ -36,7 +35,7 @@ public class AnvilStack implements Listener {
 		if (isAnvilResultSlot) {
 			ItemStack input1 = anvil.getItem(0);
 			ItemStack input2 = anvil.getItem(1);
-			if ((input1 != null && isStackedToolOrBook(input1)) || (input2 != null && isStackedToolOrBook(input2))) {
+			if ((input1 != null && input1.getAmount() > 1) || (input2 != null && input2.getAmount() > 1)) {
 				event.getWhoClicked().closeInventory();
 				event.setCancelled(true);
 				MessagesUtil.sendMessage(event.getWhoClicked(), MessagesUtil.DISALLOW_ANVIL_STACK.toString());
@@ -47,30 +46,43 @@ public class AnvilStack implements Listener {
 		if (isPlayerInventoryClick && action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
 			ItemStack clickedItem = event.getCurrentItem();
 			if (clickedItem != null && clickedItem.getType() != Material.AIR) {
-				if (isStackedToolOrBook(clickedItem)) {
-					event.getWhoClicked().closeInventory();
-					event.setCancelled(true);
-					MessagesUtil.sendMessage(event.getWhoClicked(), MessagesUtil.DISALLOW_ANVIL_STACK.toString());
-					return;
+				if (isCustomStackable(clickedItem)) {
+					if (clickedItem.getAmount() > 1) {
+						blockAndNotify(event);
+						return;
+					}
+					if (wouldMergeIntoAnvil(anvil, clickedItem)) {
+						blockAndNotify(event);
+						return;
+					}
 				}
 			}
 		}
 
 		if (isAnvilInputSlot) {
+			if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
+				return;
+			}
+
 			ItemStack cursorItem = event.getCursor();
-			ItemStack clickedItem = event.getCurrentItem();
+			ItemStack targetSlotItem = anvil.getItem(rawSlot);
 
 			boolean shouldBlock = false;
 
 			if (cursorItem != null && cursorItem.getType() != Material.AIR) {
-				if (isStackedToolOrBook(cursorItem)) {
-					shouldBlock = true;
-				}
-			}
+				if (isCustomStackable(cursorItem)) {
+					int existingAmount = (targetSlotItem != null && targetSlotItem.getType() != Material.AIR
+							&& targetSlotItem.isSimilar(cursorItem)) ? targetSlotItem.getAmount() : 0;
 
-			if (!shouldBlock && action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
-				if (clickedItem != null && clickedItem.getType() != Material.AIR) {
-					if (isStackedToolOrBook(clickedItem)) {
+					if (action == InventoryAction.PLACE_ALL
+							|| (action == InventoryAction.PLACE_ONE && existingAmount >= 1) || (existingAmount
+									+ (action == InventoryAction.PLACE_ONE ? 1 : cursorItem.getAmount()) > 1)) {
+						if (existingAmount >= 1 || cursorItem.getAmount() > 1) {
+							shouldBlock = true;
+						}
+					}
+
+					if (existingAmount == 0 && cursorItem.getAmount() > 1 && action == InventoryAction.PLACE_ALL) {
 						shouldBlock = true;
 					}
 				}
@@ -80,42 +92,47 @@ public class AnvilStack implements Listener {
 				int hotbarButton = event.getHotbarButton();
 				if (hotbarButton >= 0) {
 					ItemStack hotbarItem = event.getWhoClicked().getInventory().getItem(hotbarButton);
-					if (hotbarItem != null && isStackedToolOrBook(hotbarItem)) {
-						shouldBlock = true;
+					if (hotbarItem != null && isCustomStackable(hotbarItem)) {
+						if (hotbarItem.getAmount() > 1) {
+							shouldBlock = true;
+						} else if (targetSlotItem != null && targetSlotItem.isSimilar(hotbarItem)) {
+							shouldBlock = true;
+						}
 					}
 				}
 			}
 
 			if (shouldBlock) {
-				event.getWhoClicked().closeInventory();
-				event.setCancelled(true);
-				MessagesUtil.sendMessage(event.getWhoClicked(), MessagesUtil.DISALLOW_ANVIL_STACK.toString());
+				blockAndNotify(event);
 			}
 		}
 	}
 
-	private boolean isStackedToolOrBook(ItemStack item) {
-		if (item == null || item.getAmount() <= 1) {
-			return false;
-		}
+	private boolean wouldMergeIntoAnvil(AnvilInventory anvil, ItemStack item) {
+		ItemStack slot1 = anvil.getItem(0);
+		ItemStack slot2 = anvil.getItem(1);
+		boolean slot1Matches = (slot1 != null && slot1.isSimilar(item));
+		boolean slot2Matches = (slot2 != null && slot2.isSimilar(item));
+		return slot1Matches || slot2Matches;
+	}
 
-		if (!ItemHandler.getInstance().hasEditedStackSize(item.getType())) {
+	private void blockAndNotify(InventoryClickEvent event) {
+		event.getWhoClicked().closeInventory();
+		event.setCancelled(true);
+		MessagesUtil.sendMessage(event.getWhoClicked(), MessagesUtil.DISALLOW_ANVIL_STACK.toString());
+	}
+
+	private boolean isCustomStackable(ItemStack item) {
+		if (item == null) 
 			return false;
-		}
+
+		if (!ItemHandler.getInstance().hasEditedStackSize(item.getType())) 
+			return false;
 
 		Material type = item.getType();
-		String name = type.name();
-
-		boolean isToolOrArmor = name.endsWith("_SWORD") || name.endsWith("_PICKAXE") || name.endsWith("_AXE")
-				|| name.endsWith("_SHOVEL") || name.endsWith("_HOE") || name.endsWith("_HELMET")
-				|| name.endsWith("_CHESTPLATE") || name.endsWith("_LEGGINGS") || name.endsWith("_BOOTS")
-				|| type == Material.BOW || type == Material.CROSSBOW || type == Material.TRIDENT
-				|| type == Material.SHIELD || type == Material.ELYTRA || type == Material.FISHING_ROD
-				|| type == Material.SHEARS;
-
+		boolean isToolOrArmor = DamageableUtil.isDamageable(type);
 		boolean isBook = type == Material.BOOK || type == Material.ENCHANTED_BOOK || type == Material.WRITTEN_BOOK
 				|| type == Material.WRITABLE_BOOK;
-
 		return isToolOrArmor || isBook;
 	}
 }
