@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import com.codingguru.inventorystacks.api.PluginManager;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.util.GroundStackUtil;
 import com.codingguru.inventorystacks.util.ServerTypeUtil;
@@ -23,7 +24,7 @@ import com.codingguru.inventorystacks.util.ServerTypeUtil;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
-public class ItemHologramManager {
+public class ItemHologramManager implements PluginManager {
 
 	private static final int DEFAULT_DESPAWN_TICKS = 6000;
 	private static final LegacyComponentSerializer LEGACY_AMPERSAND = LegacyComponentSerializer.legacyAmpersand();
@@ -45,17 +46,8 @@ public class ItemHologramManager {
 		this.plugin = plugin;
 	}
 
-	public void enable() {
-		reload();
-	}
-
-	public void disable() {
-		stopTask();
-		clearAll();
-	}
-
-	public void reload() {
-		stopTask();
+	@Override
+	public void start() {
 		loadConfig();
 
 		if (!enabled) {
@@ -64,6 +56,12 @@ public class ItemHologramManager {
 		}
 
 		startTask();
+	}
+
+	@Override
+	public void stop() {
+		stopTask();
+		clearAll();
 	}
 
 	public boolean isEnabled() {

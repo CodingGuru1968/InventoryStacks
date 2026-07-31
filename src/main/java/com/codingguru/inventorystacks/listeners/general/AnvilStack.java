@@ -1,5 +1,10 @@
 package com.codingguru.inventorystacks.listeners.general;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -12,16 +17,23 @@ import org.bukkit.inventory.ItemStack;
 import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.util.DamageableUtil;
-import com.codingguru.inventorystacks.util.MessagesUtil;
+import com.codingguru.inventorystacks.util.LangDefaults;
+import com.codingguru.inventorystacks.util.MessageBuilder;
 
 public class AnvilStack implements Listener {
 
+	private final InventoryStacks plugin;
+
+	public AnvilStack(InventoryStacks plugin) {
+		this.plugin = plugin;
+	}
+
 	@EventHandler
 	public void onInventoryClick(InventoryClickEvent event) {
-		if (!InventoryStacks.getInstance().getConfig().getBoolean("disallow-stacked-anvil-items")) 
+		if (!plugin.getConfig().getBoolean("disallow-stacked-anvil-items.enabled"))
 			return;
 
-		if (event.getView().getTopInventory().getType() != InventoryType.ANVIL) 
+		if (event.getView().getTopInventory().getType() != InventoryType.ANVIL)
 			return;
 
 		int rawSlot = event.getRawSlot();
@@ -35,10 +47,12 @@ public class AnvilStack implements Listener {
 		if (isAnvilResultSlot) {
 			ItemStack input1 = anvil.getItem(0);
 			ItemStack input2 = anvil.getItem(1);
-			if ((input1 != null && input1.getAmount() > 1) || (input2 != null && input2.getAmount() > 1)) {
+			if ((input1 != null && input1.getAmount() > 1 && !isWhitelisted(input1, 0))
+					|| (input2 != null && input2.getAmount() > 1 && !isWhitelisted(input2, 1))) {
 				event.getWhoClicked().closeInventory();
 				event.setCancelled(true);
-				MessagesUtil.sendMessage(event.getWhoClicked(), MessagesUtil.DISALLOW_ANVIL_STACK.toString());
+				new MessageBuilder.Builder("disallow-anvil-stack", LangDefaults.DISALLOW_ANVIL_STACK)
+						.send(event.getWhoClicked());
 				return;
 			}
 		}
@@ -47,13 +61,17 @@ public class AnvilStack implements Listener {
 			ItemStack clickedItem = event.getCurrentItem();
 			if (clickedItem != null && clickedItem.getType() != Material.AIR) {
 				if (isCustomStackable(clickedItem)) {
-					if (clickedItem.getAmount() > 1) {
-						blockAndNotify(event);
-						return;
-					}
-					if (wouldMergeIntoAnvil(anvil, clickedItem)) {
-						blockAndNotify(event);
-						return;
+					int targetSlot = (anvil.getItem(0) == null || anvil.getItem(0).getType() == Material.AIR) ? 0 : 1;
+
+					if (!isWhitelisted(clickedItem, targetSlot)) {
+						if (clickedItem.getAmount() > 1) {
+							blockAndNotify(event);
+							return;
+						}
+						if (wouldMergeIntoAnvil(anvil, clickedItem)) {
+							blockAndNotify(event);
+							return;
+						}
 					}
 				}
 			}
@@ -70,7 +88,7 @@ public class AnvilStack implements Listener {
 			boolean shouldBlock = false;
 
 			if (cursorItem != null && cursorItem.getType() != Material.AIR) {
-				if (isCustomStackable(cursorItem)) {
+				if (isCustomStackable(cursorItem) && !isWhitelisted(cursorItem, rawSlot)) {
 					int existingAmount = (targetSlotItem != null && targetSlotItem.getType() != Material.AIR
 							&& targetSlotItem.isSimilar(cursorItem)) ? targetSlotItem.getAmount() : 0;
 
@@ -92,7 +110,7 @@ public class AnvilStack implements Listener {
 				int hotbarButton = event.getHotbarButton();
 				if (hotbarButton >= 0) {
 					ItemStack hotbarItem = event.getWhoClicked().getInventory().getItem(hotbarButton);
-					if (hotbarItem != null && isCustomStackable(hotbarItem)) {
+					if (hotbarItem != null && isCustomStackable(hotbarItem) && !isWhitelisted(hotbarItem, rawSlot)) {
 						if (hotbarItem.getAmount() > 1) {
 							shouldBlock = true;
 						} else if (targetSlotItem != null && targetSlotItem.isSimilar(hotbarItem)) {
@@ -119,14 +137,15 @@ public class AnvilStack implements Listener {
 	private void blockAndNotify(InventoryClickEvent event) {
 		event.getWhoClicked().closeInventory();
 		event.setCancelled(true);
-		MessagesUtil.sendMessage(event.getWhoClicked(), MessagesUtil.DISALLOW_ANVIL_STACK.toString());
+		new MessageBuilder.Builder("disallow-anvil-stack", LangDefaults.DISALLOW_ANVIL_STACK)
+				.send(event.getWhoClicked());
 	}
 
 	private boolean isCustomStackable(ItemStack item) {
-		if (item == null) 
+		if (item == null)
 			return false;
 
-		if (!ItemHandler.getInstance().hasEditedStackSize(item.getType())) 
+		if (!ItemHandler.getInstance().hasEditedStackSize(item.getType()))
 			return false;
 
 		Material type = item.getType();
@@ -134,5 +153,22 @@ public class AnvilStack implements Listener {
 		boolean isBook = type == Material.BOOK || type == Material.ENCHANTED_BOOK || type == Material.WRITTEN_BOOK
 				|| type == Material.WRITABLE_BOOK;
 		return isToolOrArmor || isBook;
+	}
+
+	private boolean isWhitelisted(ItemStack item, int slot) {
+		if (item == null)
+			return false;
+		Set<String> whitelisted = getWhitelistedItems(slot);
+		return whitelisted.contains(item.getType().name());
+	}
+
+	private Set<String> getWhitelistedItems(int slot) {
+		String path = (slot == 0) ? "disallow-stacked-anvil-items.slot1-whitelist-items"
+				: "disallow-stacked-anvil-items.slot2-whitelist-items";
+		List<String> list = plugin.getConfig().getStringList(path);
+		if (list == null || list.isEmpty()) {
+			return Collections.emptySet();
+		}
+		return list.stream().map(s -> s.toUpperCase().trim()).collect(Collectors.toSet());
 	}
 }

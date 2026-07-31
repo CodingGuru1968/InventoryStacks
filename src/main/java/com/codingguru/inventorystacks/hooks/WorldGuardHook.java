@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.BlockState;
+import org.bukkit.entity.Entity;
 import org.bukkit.inventory.Inventory;
 
 import com.codingguru.inventorystacks.InventoryStacks;
@@ -16,6 +18,7 @@ import com.sk89q.worldguard.protection.regions.RegionContainer;
 
 public final class WorldGuardHook {
 
+	private final static InventoryStacks PLUGIN = InventoryStacks.getInstance();
 	private static boolean isEnabled = false;
 
 	public static boolean isEnabled() {
@@ -24,11 +27,10 @@ public final class WorldGuardHook {
 
 	public static boolean setupWorldGuard() {
 		isEnabled = Bukkit.getPluginManager().getPlugin("WorldGuard") != null
-				&& InventoryStacks.getInstance().getConfig().getBoolean("worldguard.enabled", false);
+				&& PLUGIN.getConfig().getBoolean("worldguard.enabled", false);
 
 		if (!ItemHandler.getInstance().isUsingModernAPI()) {
-			ConsoleUtil
-					.warning("WorldGuard support was found and enabled but cannot be used on old server version API.");
+			ConsoleUtil.warning("WorldGuard support was found and enabled but cannot be used on legacy version API.");
 			return false;
 		}
 
@@ -42,8 +44,7 @@ public final class WorldGuardHook {
 		if (loc == null)
 			return false;
 
-		List<String> targetRegions = InventoryStacks.getInstance().getConfig()
-				.getStringList("worldguard.enabled-regions");
+		List<String> targetRegions = PLUGIN.getConfig().getStringList("worldguard.enabled-regions");
 
 		if (targetRegions == null || targetRegions.isEmpty())
 			return true;
@@ -77,12 +78,12 @@ public final class WorldGuardHook {
 		} catch (Exception ignored) {
 		}
 
-		if (inv.getHolder() instanceof org.bukkit.block.BlockState) {
-			return ((org.bukkit.block.BlockState) inv.getHolder()).getLocation();
+		if (inv.getHolder() instanceof BlockState) {
+			return ((BlockState) inv.getHolder()).getLocation();
 		}
 
-		if (inv.getHolder() instanceof org.bukkit.entity.Entity) {
-			return ((org.bukkit.entity.Entity) inv.getHolder()).getLocation();
+		if (inv.getHolder() instanceof Entity) {
+			return ((Entity) inv.getHolder()).getLocation();
 		}
 
 		return null;

@@ -16,7 +16,8 @@ import org.bukkit.inventory.ItemStack;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.util.DamageableUtil;
 import com.codingguru.inventorystacks.util.ItemUtil;
-import com.codingguru.inventorystacks.util.MessagesUtil;
+import com.codingguru.inventorystacks.util.LangDefaults;
+import com.codingguru.inventorystacks.util.MessageBuilder;
 import com.codingguru.inventorystacks.util.RandomUtil;
 import com.codingguru.inventorystacks.util.XMaterialUtil;
 import com.google.common.collect.Lists;
@@ -39,14 +40,14 @@ public class Commands implements Listener {
 			return;
 
 		int amount;
-		
+
 		try {
 			amount = Integer.parseInt(command[3]);
 		} catch (NumberFormatException exp) {
-			MessagesUtil.sendMessage(e.getPlayer(), MessagesUtil.NUMBER_EXCEPTION.toString());
+			new MessageBuilder.Builder("number-exception", LangDefaults.NUMBER_EXCEPTION).send(e.getPlayer());
 			return;
 		}
-		
+
 		Optional<XMaterialUtil> item = XMaterialUtil.matchXMaterial(itemName);
 
 		if (item == null || !item.isPresent() || item.get() == null)
@@ -63,8 +64,8 @@ public class Commands implements Listener {
 			List<Player> targetedPlayers = getTargetedPlayers(e.getPlayer(), command[1]);
 
 			if (targetedPlayers.isEmpty()) {
-				MessagesUtil.sendMessage(e.getPlayer(),
-						MessagesUtil.PLAYER_NOT_FOUND.toString().replaceAll("%id%", command[1]));
+				new MessageBuilder.Builder("player-not-found", LangDefaults.PLAYER_NOT_FOUND).set("%id%", command[1])
+						.send(e.getPlayer());
 				return;
 			}
 
@@ -74,9 +75,8 @@ public class Commands implements Listener {
 			itemStack.setAmount(amount);
 			targetedPlayers.stream().forEach(player -> {
 				ItemUtil.addItem(player, itemStack);
-				MessagesUtil.sendMessage(e.getPlayer(),
-						MessagesUtil.GIVEN_ITEM.toString().replaceAll("%amount%", amount + "")
-								.replaceAll("%item%", niceName).replaceAll("%id%", player.getName()));
+				new MessageBuilder.Builder("given-item", LangDefaults.GIVEN_ITEM).set("%amount%", amount + "")
+						.set("%item%", niceName).set("%id%", player.getName()).send(e.getPlayer());
 			});
 		}
 	}
@@ -101,7 +101,7 @@ public class Commands implements Listener {
 		try {
 			amount = Integer.parseInt(command[3]);
 		} catch (NumberFormatException exp) {
-			MessagesUtil.sendMessage(e.getSender(), MessagesUtil.NUMBER_EXCEPTION.toString());
+			new MessageBuilder.Builder("number-exception", LangDefaults.NUMBER_EXCEPTION).send(e.getSender());
 			return;
 		}
 
@@ -121,8 +121,8 @@ public class Commands implements Listener {
 			List<Player> targetedPlayers = getTargetedPlayers(null, command[1]);
 
 			if (targetedPlayers.isEmpty()) {
-				MessagesUtil.sendMessage(e.getSender(),
-						MessagesUtil.PLAYER_NOT_FOUND.toString().replaceAll("%id%", command[1]));
+				new MessageBuilder.Builder("player-not-found", LangDefaults.PLAYER_NOT_FOUND).set("%id%", command[1])
+						.send(e.getSender());
 				return;
 			}
 
@@ -132,9 +132,8 @@ public class Commands implements Listener {
 			itemStack.setAmount(amount);
 			targetedPlayers.stream().forEach(player -> {
 				ItemUtil.addItem(player, itemStack);
-				MessagesUtil.sendMessage(e.getSender(),
-						MessagesUtil.GIVEN_ITEM.toString().replaceAll("%amount%", amount + "")
-								.replaceAll("%item%", niceName).replaceAll("%id%", player.getName()));
+				new MessageBuilder.Builder("given-item", LangDefaults.GIVEN_ITEM).set("%amount%", amount + "")
+						.set("%item%", niceName).set("%id%", player.getName()).send(e.getSender());
 			});
 		}
 	}

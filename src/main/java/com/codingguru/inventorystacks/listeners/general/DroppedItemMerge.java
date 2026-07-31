@@ -20,6 +20,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.codingguru.inventorystacks.InventoryStacks;
+import com.codingguru.inventorystacks.handlers.ManagerHandler;
+import com.codingguru.inventorystacks.managers.ItemHologramManager;
 import com.codingguru.inventorystacks.scheduler.Schedule;
 import com.codingguru.inventorystacks.util.ConsoleUtil;
 import com.codingguru.inventorystacks.util.GroundStackUtil;
@@ -27,6 +29,13 @@ import com.codingguru.inventorystacks.util.GroundStackUtil;
 public class DroppedItemMerge implements Listener {
 
 	private static final double DEFAULT_MERGE_RADIUS_BLOCKS = 16.0D;
+	private final ItemHologramManager itemHologramManager;
+	private final InventoryStacks plugin;
+
+	public DroppedItemMerge(InventoryStacks plugin) {
+		this.plugin = plugin;
+		this.itemHologramManager = ManagerHandler.getInstance().get(ItemHologramManager.class);
+	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onItemSpawn(ItemSpawnEvent e) {
@@ -41,7 +50,7 @@ public class DroppedItemMerge implements Listener {
 
 		debug("spawn item=%s cap=%d radius=%.2f", simpleItem(spawnedItem), mergeCap, mergeRadius);
 
-		new Schedule() {
+		new Schedule(plugin) {
 			@Override
 			public void run() {
 				debug("spawn-deferred item=%s cap=%d radius=%.2f", simpleItem(spawnedItem), mergeCap, mergeRadius);
@@ -152,17 +161,17 @@ public class DroppedItemMerge implements Listener {
 	}
 
 	private int getMergeCap() {
-		int configured = InventoryStacks.getInstance().getConfig().getInt("item-hologram.ground-merge-max-amount", 64);
+		int configured = plugin.getConfig().getInt("item-hologram.ground-merge-max-amount", 64);
 		return Math.max(1, configured);
 	}
 
 	private boolean isDebugEnabled() {
-		return InventoryStacks.getInstance().getConfig().getBoolean("item-hologram.ground-merge-debug", false);
+		return plugin.getConfig().getBoolean("item-hologram.ground-merge-debug", false);
 	}
 
 	private double getMergeRadius() {
-		double configured = InventoryStacks.getInstance().getConfig()
-				.getDouble("item-hologram.ground-merge-radius-blocks", DEFAULT_MERGE_RADIUS_BLOCKS);
+		double configured = plugin.getConfig().getDouble("item-hologram.ground-merge-radius-blocks",
+				DEFAULT_MERGE_RADIUS_BLOCKS);
 		return Math.max(0.5D, configured);
 	}
 
@@ -219,14 +228,12 @@ public class DroppedItemMerge implements Listener {
 		debug("nearby-merge-complete target=%s mergedCount=%d finalTotal=%d", simpleItem(target), mergedTargets.size(),
 				GroundStackUtil.getTotal(target));
 
-		if (InventoryStacks.getInstance().getItemHologramManager() != null) {
-			for (Item mergedItem : mergedTargets) {
-				if (!mergedItem.isValid() || mergedItem.isDead()) {
-					InventoryStacks.getInstance().getItemHologramManager().untrack(mergedItem);
-				}
+		for (Item mergedItem : mergedTargets) {
+			if (!mergedItem.isValid() || mergedItem.isDead()) {
+				itemHologramManager.untrack(mergedItem);
 			}
-			InventoryStacks.getInstance().getItemHologramManager().track(target);
 		}
+		itemHologramManager.track(target);
 	}
 
 	private boolean mergeSourceIntoTarget(Item source, Item target, int mergeCap) {
@@ -285,13 +292,11 @@ public class DroppedItemMerge implements Listener {
 				simpleItem(source), simpleItem(target), transferAmount, sourceAmount, targetAmount,
 				GroundStackUtil.getTotal(target), mergeCap);
 
-		if (InventoryStacks.getInstance().getItemHologramManager() != null) {
-			if (!source.isValid() || source.isDead()) {
-				InventoryStacks.getInstance().getItemHologramManager().untrack(source);
-			}
-			InventoryStacks.getInstance().getItemHologramManager().track(target);
+		if (!source.isValid() || source.isDead()) {
+			itemHologramManager.untrack(source);
 		}
 
+		itemHologramManager.track(target);
 		return true;
 	}
 
@@ -327,19 +332,14 @@ public class DroppedItemMerge implements Listener {
 			debug("pickup-result remove item=%s", simpleItem(item));
 			GroundStackUtil.clearTotal(item);
 			item.remove();
-			if (InventoryStacks.getInstance().getItemHologramManager() != null) {
-				InventoryStacks.getInstance().getItemHologramManager().untrack(item);
-			}
+			itemHologramManager.untrack(item);
 			return;
 		}
 
 		GroundStackUtil.setTotal(item, remainingAmount);
 		item.setTicksLived(1);
 		debug("pickup-result keep item=%s remaining=%d", simpleItem(item), remainingAmount);
-
-		if (InventoryStacks.getInstance().getItemHologramManager() != null) {
-			InventoryStacks.getInstance().getItemHologramManager().track(item);
-		}
+		itemHologramManager.track(item);
 	}
 
 	private boolean isMergeCandidate(ItemStack base, ItemStack other) {

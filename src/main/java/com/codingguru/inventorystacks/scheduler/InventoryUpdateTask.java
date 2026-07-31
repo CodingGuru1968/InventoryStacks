@@ -4,11 +4,14 @@ import java.lang.ref.WeakReference;
 
 import org.bukkit.entity.Player;
 
+import com.codingguru.inventorystacks.InventoryStacks;
+
 public class InventoryUpdateTask extends Schedule {
 
 	private final WeakReference<Player> player;
 
-	public InventoryUpdateTask(Player player) {
+	public InventoryUpdateTask(InventoryStacks plugin, Player player) {
+		super(plugin);
 		this.player = new WeakReference<Player>(player);
 	}
 

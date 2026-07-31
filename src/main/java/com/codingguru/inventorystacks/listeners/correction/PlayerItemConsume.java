@@ -6,6 +6,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
 
+import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.scheduler.ChangeItemInHandWithItemTask;
 import com.codingguru.inventorystacks.util.ItemUtil;
@@ -15,8 +16,10 @@ import com.codingguru.inventorystacks.util.XMaterialUtil;
 public class PlayerItemConsume implements Listener {
 
 	private final long itemChangeDelay;
+	private final InventoryStacks plugin;
 
-	public PlayerItemConsume(long itemChangeDelay) {
+	public PlayerItemConsume(InventoryStacks plugin, long itemChangeDelay) {
+		this.plugin = plugin;
 		this.itemChangeDelay = itemChangeDelay;
 	}
 
@@ -45,7 +48,7 @@ public class PlayerItemConsume implements Listener {
 		ItemStack clone = e.getItem().clone();
 		clone.setAmount(e.getItem().getAmount() - 1);
 
-		ChangeItemInHandWithItemTask changeItemTask = new ChangeItemInHandWithItemTask(e.getPlayer(), clone,
+		ChangeItemInHandWithItemTask changeItemTask = new ChangeItemInHandWithItemTask(plugin, e.getPlayer(), clone,
 				new ItemStack(XMaterialUtil.BOWL.get()), XMaterialUtil.BOWL.get());
 		changeItemTask.runTaskLater(itemChangeDelay);
 	}

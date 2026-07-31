@@ -6,7 +6,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
-import com.codingguru.inventorystacks.util.MessagesUtil;
+import com.codingguru.inventorystacks.util.LangDefaults;
+import com.codingguru.inventorystacks.util.MessageBuilder;
 import com.codingguru.inventorystacks.util.VersionUtil;
 
 public class BundleFix implements Listener {
@@ -34,7 +35,7 @@ public class BundleFix implements Listener {
 			return;
 
 		e.setCancelled(true);
-		MessagesUtil.sendMessage(e.getWhoClicked(), MessagesUtil.BUNDLE_FIX.toString());
+		new MessageBuilder.Builder("bundle-fix", LangDefaults.BUNDLE_FIX).send(e.getWhoClicked());
 	}
 
 	private boolean isBundle(ItemStack item) {

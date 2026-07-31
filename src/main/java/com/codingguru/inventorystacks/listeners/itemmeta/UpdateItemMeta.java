@@ -1,5 +1,9 @@
 package com.codingguru.inventorystacks.listeners.itemmeta;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -24,8 +28,13 @@ import com.codingguru.inventorystacks.scheduler.Schedule;
 
 public class UpdateItemMeta implements Listener {
 
-	private final java.util.Set<Integer> scheduled = java.util.Collections
-			.newSetFromMap(new java.util.concurrent.ConcurrentHashMap<>());
+	private final Set<Integer> scheduled;
+	private final InventoryStacks plugin;
+
+	public UpdateItemMeta(InventoryStacks plugin) {
+		this.plugin = plugin;
+		this.scheduled = Collections.newSetFromMap(new ConcurrentHashMap<>());
+	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onInventoryClick(InventoryClickEvent e) {
@@ -53,8 +62,8 @@ public class UpdateItemMeta implements Listener {
 			callNow(null, null, e.getItem());
 			return;
 		}
-
-		if (!InventoryStacks.getInstance().getConfig().getBoolean("worldguard.hopper-support", false))
+	
+		if (!plugin.getConfig().getBoolean("worldguard.hopper-support", false))
 			return;
 
 		callNow(null, WorldGuardHook.getLocationFromInventory(e.getDestination()), e.getItem());
@@ -100,7 +109,7 @@ public class UpdateItemMeta implements Listener {
 		if (!scheduled.add(key))
 			return;
 
-		new Schedule() {
+		new Schedule(plugin) {
 			@Override
 			public void run() {
 				try {
@@ -117,7 +126,7 @@ public class UpdateItemMeta implements Listener {
 			return false;
 		}
 
-		FileConfiguration config = InventoryStacks.getInstance().getConfig();
+		FileConfiguration config = plugin.getConfig();
 
 		if (!ItemHandler.getInstance().hasUpdatedStack(stack)) {
 			if (config.getBoolean("auto-stack-cleanup", true)) {

@@ -8,22 +8,28 @@ import com.codingguru.inventorystacks.util.ServerTypeUtil;
 
 public abstract class Schedule implements Runnable {
 
-	private final boolean USING_FOLIA = ItemHandler.getInstance().getServerType() == ServerTypeUtil.FOLIA;
+	protected final InventoryStacks plugin;
+	private final boolean USING_FOLIA;
+
+	public Schedule(InventoryStacks plugin) {
+		this.plugin = plugin;
+		this.USING_FOLIA = ItemHandler.getInstance().getServerType() == ServerTypeUtil.FOLIA;
+	}
 
 	public void runTask() {
 		if (USING_FOLIA) {
-			Bukkit.getGlobalRegionScheduler().execute(InventoryStacks.getInstance(), this);
+			Bukkit.getGlobalRegionScheduler().execute(plugin, this);
 		} else {
-			Bukkit.getScheduler().runTask(InventoryStacks.getInstance(), this);
+			Bukkit.getScheduler().runTask(plugin, this);
 		}
 	}
 
-	public void runTaskLater(long delay) {
+	public void runTaskLater(long delay) {	
 		if (USING_FOLIA) {
-			Bukkit.getGlobalRegionScheduler().runDelayed(InventoryStacks.getInstance(), t -> this.run(), delay);
+			Bukkit.getGlobalRegionScheduler().runDelayed(plugin, t -> this.run(), delay);
 		} else {
-			Bukkit.getScheduler().runTaskLater(InventoryStacks.getInstance(), this, delay);
+			Bukkit.getScheduler().runTaskLater(plugin, this, delay);
 		}
 	}
-	
+
 }

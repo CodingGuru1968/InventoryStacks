@@ -5,6 +5,7 @@ import java.lang.ref.WeakReference;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.util.ItemUtil;
 
 public class DamageItemTask extends Schedule {
@@ -13,7 +14,8 @@ public class DamageItemTask extends Schedule {
 	private final ItemStack item;
 	private final ItemStack clone;
 
-	public DamageItemTask(Player player, ItemStack item, ItemStack clone) {
+	public DamageItemTask(InventoryStacks plugin, Player player, ItemStack item, ItemStack clone) {
+		super(plugin);
 		this.player = new WeakReference<Player>(player);
 		this.item = item;
 		this.clone = clone;

@@ -6,14 +6,17 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.ItemStack;
 
+import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.scheduler.DamageItemTask;
 
 public class PlayerItemDamage implements Listener {
 
 	private final long itemChangeDelay;
-
-	public PlayerItemDamage(long itemChangeDelay) {
+	private final InventoryStacks plugin;
+	
+	public PlayerItemDamage(InventoryStacks plugin, long itemChangeDelay) {
+		this.plugin = plugin;
 		this.itemChangeDelay = itemChangeDelay;
 	}
 
@@ -30,7 +33,7 @@ public class PlayerItemDamage implements Listener {
 		ItemStack clone = e.getItem().clone();
 		clone.setAmount(originalAmount - 1);
 
-		DamageItemTask damageItemTask = new DamageItemTask(e.getPlayer(), e.getItem(), clone);
+		DamageItemTask damageItemTask = new DamageItemTask(plugin, e.getPlayer(), e.getItem(), clone);
 		damageItemTask.runTaskLater(itemChangeDelay);
 	}
 }

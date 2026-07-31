@@ -1,91 +1,43 @@
-# General Settings
-check-for-updates: true # Check for new plugin updates
+#########################################################################################################################
+# +-------------------------------------------------------------------------------------------------------------------+ #
+# |                                                                                                                   | #
+# |  ,--.                                 ,--.                          ,---.   ,--.                ,--.              | #
+# |  |  |,--,--,,--.  ,--.,---. ,--,--, ,-'  '-. ,---. ,--.--.,--. ,--.'   .-',-'  '-. ,--,--. ,---.|  |,-.  ,---.    | #
+# |  |  ||      \\  `'  /| .-. :|      \'-.  .-'| .-. ||  .--' \  '  / `.  `-.'-.  .-'' ,-.  || .--'|     / (  .-'    | #
+# |  |  ||  ||  | \    / \   --.|  ||  |  |  |  ' '-' '|  |     \   '  .-'    | |  |  \ '-'  |\ `--.|  \  \ .-'  `)   | #
+# |  `--'`--''--'  `--'   `----'`--''--'  `--'   `---' `--'   .-'  /   `-----'  `--'   `--`--' `---'`--'`--'`----'    | #
+# |                                                          `---'                                                    | #
+# |                                                                                                                   | #
+# | WIKI:    https://codingguru1968.gitbook.io/inventorystacks-wiki                                                   | #
+# | DISCORD: https://discord.gg/Rqmngywv57                                                                            | #
+# |                                                                                                                   | #
+# +-------------------------------------------------------------------------------------------------------------------+ #
+#########################################################################################################################
+
+# +----------------------------------------------------------------------------------------------+ #
+# | GENERAL SETTINGS                                                                             | #
+# +----------------------------------------------------------------------------------------------+ #
+
+# Check for new plugin updates
+check-for-updates: true 
+
+# Set the language file to use from the 'lang' folder
+# English = en, French = fr, Spanish = es, German = de, Russian = ru
+language: "en"
 
 # Enables extra console logging for troubleshooting
 # Recommended to keep false unless actively debugging
 debug-mode: false
 
-# Minecraft 1.20.5+ ONLY
-# Permission based stacking (disabled by default)
-# STACKS.USE
-# This only applies to inventory click events
-use-permission:
-  enabled: false
-  auto-stack-cleanup: true # Clean up stacks on players who don't have permission
-
-# Use mini messages
-# Allows for clickable links, actions and more.
+# Set the language file to use / Use mini messages
 use-mini-message: false
 
-# Stack command
-# Default Stack Type = HAND / ALL
-# Hand stacks all items player is holding
-# All stacks all the items in the player's inventory
-# Command = /stack or /stack [HAND/ALL]
-stack-command:
-  enabled: true
-  default-stack-type: 'HAND'
-  
-# Minecraft 1.20.5+ ONLY
-# When TRUE, forces legacy reflection-based stack handling instead of ItemMeta
-# May improve performance on large servers with many custom stack updates
-# Known limitation: container GUIs may not reflect updated stack sizes (only visual)
-# Restart your server when toggling this setting
-use-legacy-reflection: false
-
-# Disallow stacked items/tools in anvils to be applied
-disallow-stacked-anvil-items: true
-
-# Minecraft 1.20.5+ ONLY
-# This setting only applies when "use-legacy-reflection" is false
-# When TRUE, an item that is not listed in "items" section, it will reset to default vanilla amount
-# This only applies when it has a custom stack amount to avoid overuse
-auto-stack-cleanup: true
-  
-# Update rate for buckets, drinkable items, and damageable items
-# This is an option because on folia it needs more of a delay to work correctly
-# This is in ticks
+# Update rate for buckets, drinkable items, and damageable items (in ticks, useful for Folia)
 item-change-delay: 2
 
-# Dropped item hologram display
-# Shows amount, item name and despawn timer above dropped items.
-# This can be used as a lightweight replacement for item-count holograms.
-item-hologram:
-  enabled: false
-  update-interval-ticks: 10
-  y-offset: 0.6
-  show-despawn-timer: true
-  despawn-ticks: 6000
-  # Max amount a dropped stack should merge into for nearby identical items.
-  # Keep at 64 for vanilla behavior, or set higher (for example 4096) to keep
-  # merging nearby drops and reset despawn time when they merge.
-  # This merge behavior works even when item-hologram.enabled is false.
-  ground-merge-max-amount: 64
-  # Radius in blocks used to find nearby identical dropped items to merge.
-  # Larger values can merge wider item clusters but may cost more per item spawn.
-  # This merge behavior works even when item-hologram.enabled is false.
-  ground-merge-radius-blocks: 16
-  # Debug logging for dropped-item merge and pickup flow.
-  # Logs reasons when merges are skipped and summaries when merges/pickups happen.
-  ground-merge-debug: false
-  format: '&e%amount%x &f%item% &7(%time%)'
-
-# Minecraft 1.20.5+ ONLY
-# WorldGuard region support
-# Use this section if you only want to apply item stacks in specific regions
-worldguard:
-  enabled: false
-  hopper-support: false # This is disabled by default due to a high server load (could cause lag, enable with caution)
-  auto-stack-cleanup: true # Removes stacks not inside of WorldGuard regions (can cause higher server load)
-  enabled-regions: # Regions stacking will be allowed in
-  - ExampleRegion
-
-# This setting will enable a max stack amount for ALL items in the game and make them all the same size
-max-stack-for-all-items: 
-  enabled: false # Disabled by default
-  amount: 99
-  whitelist: # This is a whitelist of items that won't be included
-  - BED
+# +----------------------------------------------------------------------------------------------+ #
+# | ITEM STACK SIZES & GLOBALS                                                                   | #
+# +----------------------------------------------------------------------------------------------+ #
 
 # Max Item Stack Sizes
 # Format = MATERIAL NAME : STACK SIZE
@@ -110,15 +62,109 @@ items:
   # SPAWN_EGGS: 16
   # SPLASH_POTION: 16
 
-############################################################################
-#                                                                          #
-#   This section applies when:                                             #
-#                                                                          #
-#   - Minecraft version is earlier than 1.20.5                             #
-#   - OR "use-legacy-reflection" is enabled                                #
-#                                                                          #
-############################################################################
+# This setting will enable a max stack amount for ALL items in the game and make them all the same size
+max-stack-for-all-items: 
+  enabled: false # Disabled by default
+  amount: 99
+  whitelist: # This is a whitelist of items that won't be included
+  - BED
 
+
+# +----------------------------------------------------------------------------------------------+ #
+# | STACK COMMAND & SETTINGS                                                                     | #
+# +----------------------------------------------------------------------------------------------+ #
+
+# Stack command
+# Default Stack Type = HAND / ALL
+# Hand stacks all items player is holding
+# All stacks all the items in the player's inventory
+# Command = /stack or /stack [HAND/ALL]
+stack-command:
+  enabled: true
+  default-stack-type: 'HAND'
+
+# Minecraft 1.20.5+ ONLY
+# Permission based stacking (disabled by default)
+# STACKS.USE
+# This only applies to inventory click events
+use-permission:
+  enabled: false
+  auto-stack-cleanup: true # Clean up stacks on players who don't have permission
+
+# Minecraft 1.20.5+ ONLY
+# When TRUE, forces legacy reflection-based stack handling instead of ItemMeta
+# May improve performance on large servers with many custom stack updates
+# Known limitation: container GUIs may not reflect updated stack sizes (only visual)
+# Restart your server when toggling this setting
+use-legacy-reflection: false
+
+# Minecraft 1.20.5+ ONLY
+# This setting only applies when "use-legacy-reflection" is false
+# When TRUE, an item that is not listed in "items" section, it will reset to default vanilla amount
+# This only applies when it has a custom stack amount to avoid overuse
+auto-stack-cleanup: true
+
+# Disallow stacked items/tools in anvils to be applied
+# This will only apply to items that have a custom edited stack within the plugin
+disallow-stacked-anvil-items:
+  enabled: true
+  # These item types will be allowed to stack inside the anvil
+  slot1-whitelist-items:
+  - DIAMOND
+  slot2-whitelist-items:
+  - DIAMOND
+
+
+# +----------------------------------------------------------------------------------------------+ #
+# | WORLDGUARD INTEGRATION                                                                       | #
+# +----------------------------------------------------------------------------------------------+ #
+
+# Minecraft 1.20.5+ ONLY
+# WorldGuard region support
+# Use this section if you only want to apply item stacks in specific regions
+worldguard:
+  enabled: false
+  hopper-support: false # This is disabled by default due to a high server load (could cause lag, enable with caution)
+  auto-stack-cleanup: true # Removes stacks not inside of WorldGuard regions (can cause higher server load)
+  enabled-regions: # Regions stacking will be allowed in
+  - ExampleRegion
+
+
+# +----------------------------------------------------------------------------------------------+ #
+# | DROPPED ITEMS & HOLOGRAMS                                                                    | #
+# +----------------------------------------------------------------------------------------------+ #
+
+# Dropped item hologram display
+# Shows amount, item name and despawn timer above dropped items.
+# This can be used as a lightweight replacement for item-count holograms.
+item-hologram:
+  enabled: false
+  update-interval-ticks: 10
+  y-offset: 0.6
+  show-despawn-timer: true
+  despawn-ticks: 6000
+  # Max amount a dropped stack should merge into for nearby identical items.
+  # Keep at 64 for vanilla behavior, or set higher (for example 4096) to keep
+  # merging nearby drops and reset despawn time when they merge.
+  # This merge behavior works even when item-hologram.enabled is false.
+  ground-merge-max-amount: 64
+  # Radius in blocks used to find nearby identical dropped items to merge.
+  # Larger values can merge wider item clusters but may cost more per item spawn.
+  # This merge behavior works even when item-hologram.enabled is false.
+  ground-merge-radius-blocks: 16
+  # Debug logging for dropped-item merge and pickup flow.
+  # Logs reasons when merges are skipped and summaries when merges/pickups happen.
+  ground-merge-debug: false
+  format: '&e%amount%x &f%item% &7(%time%)'
+
+
+# +----------------------------------------------------------------------------------------------+ #
+# | LEGACY VERSION COMPATIBILITY                                                                 | #
+# +----------------------------------------------------------------------------------------------+ #
+
+# This section applies when:
+# - Minecraft version is earlier than 1.20.5
+# - OR "use-legacy-reflection" is enabled
 
 # Update players inventory after merging stacked items (not required for 1.18+)
 # This makes it look cleaner when items are stacked

@@ -11,39 +11,45 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
-import com.codingguru.inventorystacks.util.MessagesUtil;
+import com.codingguru.inventorystacks.util.LangDefaults;
+import com.codingguru.inventorystacks.util.MessageBuilder;
 import com.codingguru.inventorystacks.util.VersionUtil;
 
 public class StackCmd implements CommandExecutor {
 
+	private final InventoryStacks plugin;
+
+	public StackCmd(InventoryStacks plugin) {
+		this.plugin = plugin;
+	}
+
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (!InventoryStacks.getInstance().getConfig().getBoolean("stack-command.enabled")) {
-			MessagesUtil.sendMessage(sender, MessagesUtil.COMMAND_DISABLED.toString());
+		if (!plugin.getConfig().getBoolean("stack-command.enabled")) {
+			new MessageBuilder.Builder("command-disabled", LangDefaults.COMMAND_DISABLED).send(sender);
 			return false;
 		}
 
 		if (sender instanceof ConsoleCommandSender) {
-			MessagesUtil.sendMessage(sender, MessagesUtil.IN_GAME.toString());
+			new MessageBuilder.Builder("in-game-only", LangDefaults.IN_GAME_ONLY).send(sender);
 			return false;
 		}
 
 		if (args.length == 0) {
 			if (!sender.hasPermission("STACKS.*") && !sender.hasPermission("STACKS.COMMAND")) {
-				MessagesUtil.sendMessage(sender, MessagesUtil.NO_PERMISSION.toString());
+				new MessageBuilder.Builder("no-permission", LangDefaults.NO_PERMISSION).send(sender);
 				return false;
 			}
 
-			String defaultStackType = InventoryStacks.getInstance().getConfig()
-					.isSet("stack-command.defualt-stack-type")
-							? InventoryStacks.getInstance().getConfig().getString("stack-command.defualt-stack-type")
-							: InventoryStacks.getInstance().getConfig().getString("stack-command.default-stack-type");
+			String defaultStackType = plugin.getConfig().isSet("stack-command.defualt-stack-type")
+					? plugin.getConfig().getString("stack-command.defualt-stack-type")
+					: plugin.getConfig().getString("stack-command.default-stack-type");
 
 			StackType stackType = StackType.getStackTypeFromName(defaultStackType);
 
 			if (stackType == null) {
-				MessagesUtil.sendMessage(sender,
-						MessagesUtil.INVALID_STACK_TYPE.toString().replaceAll("%type%", defaultStackType));
+				new MessageBuilder.Builder("invalid-stack-type", LangDefaults.INVALID_STACK_TYPE)
+						.set("%type%", defaultStackType).send(sender);
 				return false;
 			}
 
@@ -52,15 +58,15 @@ public class StackCmd implements CommandExecutor {
 			StackType stackType = StackType.getStackTypeFromName(args[0]);
 
 			if (stackType == null) {
-				MessagesUtil.sendMessage(sender,
-						MessagesUtil.INVALID_STACK_TYPE.toString().replaceAll("%type%", args[0]));
+				new MessageBuilder.Builder("invalid-stack-type", LangDefaults.INVALID_STACK_TYPE).set("%type%", args[0])
+						.send(sender);
 				return false;
 			}
 
 			stack((Player) sender, stackType);
 		} else {
-			MessagesUtil.sendMessage(sender, MessagesUtil.INCORRECT_USAGE.toString().replaceAll("%command%", "/stack"));
-			return false;
+			new MessageBuilder.Builder("incorrect-usage", LangDefaults.INCORRECT_USAGE).set("%command%", "/stack")
+					.send(sender);
 		}
 		return false;
 	}
@@ -69,10 +75,10 @@ public class StackCmd implements CommandExecutor {
 		switch (stackType) {
 		case HAND:
 			stackHand(player);
-			MessagesUtil.sendMessage(player, MessagesUtil.HAND_ITEMS_STACKED.toString());
+			new MessageBuilder.Builder("hand-items-stacked", LangDefaults.HAND_ITEMS_STACKED).send(player);
 			break;
 		case ALL:
-			MessagesUtil.sendMessage(player, MessagesUtil.ALL_ITEMS_STACKED.toString());
+			new MessageBuilder.Builder("all-items-stacked", LangDefaults.ALL_ITEMS_STACKED).send(player);
 			stackAllItems(player);
 			break;
 		}

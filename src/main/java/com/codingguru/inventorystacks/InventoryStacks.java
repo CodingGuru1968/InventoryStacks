@@ -1,10 +1,15 @@
 package com.codingguru.inventorystacks;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.codingguru.inventorystacks.commands.ReloadCmd;
 import com.codingguru.inventorystacks.commands.StackCmd;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
+import com.codingguru.inventorystacks.handlers.ManagerHandler;
+import com.codingguru.inventorystacks.hooks.WorldGuardHook;
 import com.codingguru.inventorystacks.listeners.correction.BlockDispense;
 import com.codingguru.inventorystacks.listeners.correction.BundleFix;
 import com.codingguru.inventorystacks.listeners.correction.FurnaceBurn;
@@ -21,17 +26,13 @@ import com.codingguru.inventorystacks.listeners.general.ItemHologram;
 import com.codingguru.inventorystacks.listeners.general.PlayerItemDamage;
 import com.codingguru.inventorystacks.listeners.itemmeta.UpdateItemMeta;
 import com.codingguru.inventorystacks.managers.ItemHologramManager;
-import com.codingguru.inventorystacks.managers.SettingsManager;
+import com.codingguru.inventorystacks.managers.LanguageManager;
 import com.codingguru.inventorystacks.util.ConsoleUtil;
-
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import com.tchristofferson.configupdater.ConfigUpdater;
 
 public class InventoryStacks extends JavaPlugin {
 
 	private static InventoryStacks INSTANCE;
-	private SettingsManager settingsManager;
-	private ItemHologramManager itemHologramManager;
-	private BukkitAudiences adventureAPI;
 
 	public void onEnable() {
 		INSTANCE = this;
@@ -40,96 +41,72 @@ public class InventoryStacks extends JavaPlugin {
 
 		saveDefaultConfig();
 
-//		try {
-//			ConfigUpdater.update(this, "config.yml", new File(getDataFolder(), "config.yml"));
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//
-//		reloadConfig();
+		try {
+			ConfigUpdater.update(this, "config.yml", new File(getDataFolder(), "config.yml"),  "items");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		reloadConfig();
 		
 		if (!ItemHandler.getInstance().setup())
 			return;
 		
-		settingsManager = new SettingsManager();
-		settingsManager.setup(this);
+		WorldGuardHook.setupWorldGuard();
 
-		getCommand("stack").setExecutor(new StackCmd());
-		getCommand("stacks").setExecutor(new ReloadCmd());
-		getCommand("inventorystacks").setExecutor(new ReloadCmd());
+		registerManagers();
 
-		itemHologramManager = new ItemHologramManager(this);
-		itemHologramManager.enable();
+		ManagerHandler.getInstance().startAll();
 
-		if (getConfig().getBoolean("use-mini-message", false)) {
-			this.adventureAPI = BukkitAudiences.create(this);
-		}
-
-		long itemChangeDelay = getConfig().getLong("item-change-delay", 2L);
-
-		getServer().getPluginManager().registerEvents(new Commands(), this);
-		getServer().getPluginManager().registerEvents(new PlayerItemDamage(itemChangeDelay), this);
-		getServer().getPluginManager().registerEvents(new BlockPlace(itemChangeDelay), this);
-		getServer().getPluginManager().registerEvents(new ItemHologram(), this);
-		getServer().getPluginManager().registerEvents(new DroppedItemMerge(), this);
-		getServer().getPluginManager().registerEvents(new BundleFix(), this);
-		getServer().getPluginManager().registerEvents(new InventoryClick(), this);
-		getServer().getPluginManager().registerEvents(new AnvilStack(), this);
-
-		if (ItemHandler.getInstance().isUsingModernAPI()) {
-			getServer().getPluginManager().registerEvents(new UpdateItemMeta(), this);
-		} else { // LEGACY SUPPORT
-			getServer().getPluginManager().registerEvents(new PlayerBucketEmpty(itemChangeDelay), this);
-			getServer().getPluginManager().registerEvents(new PlayerItemConsume(itemChangeDelay), this);
-			getServer().getPluginManager().registerEvents(new InventoryMoveItem(), this);
-			getServer().getPluginManager().registerEvents(new FurnaceBurn(), this);
-			getServer().getPluginManager().registerEvents(new PlayerInteract(), this);
-			getServer().getPluginManager().registerEvents(new BlockDispense(), this);
-		}
+		registerHooksAndListeners();
 
 		ConsoleUtil.sendPluginEndSetup();
 	}
 
 	public void onDisable() {
-		if (itemHologramManager != null) {
-			itemHologramManager.disable();
+		ManagerHandler.getInstance().stopAll();
+	}
+
+	public void reload() {
+		ManagerHandler.getInstance().stopAll();
+		reloadConfig();
+		WorldGuardHook.setupWorldGuard();
+		ManagerHandler.getInstance().startAll();
+		ItemHandler.getInstance().reloadInventoryStacks();
+	}
+	
+	private void registerManagers() {
+		ManagerHandler managerRegistry = ManagerHandler.getInstance();
+		managerRegistry.register(LanguageManager.class, new LanguageManager(this));
+		managerRegistry.register(ItemHologramManager.class, new ItemHologramManager(this));
+	}
+
+	private void registerHooksAndListeners() {
+		getCommand("stack").setExecutor(new StackCmd(this));
+		getCommand("stacks").setExecutor(new ReloadCmd(this));
+		getCommand("inventorystacks").setExecutor(new ReloadCmd(this));
+		
+		long itemChangeDelay = getConfig().getLong("item-change-delay", 2L);
+
+		getServer().getPluginManager().registerEvents(new Commands(), this);
+		getServer().getPluginManager().registerEvents(new PlayerItemDamage(this, itemChangeDelay), this);
+		getServer().getPluginManager().registerEvents(new BlockPlace(this, itemChangeDelay), this);
+		getServer().getPluginManager().registerEvents(new ItemHologram(), this);
+		getServer().getPluginManager().registerEvents(new DroppedItemMerge(this), this);
+		getServer().getPluginManager().registerEvents(new BundleFix(), this);
+		getServer().getPluginManager().registerEvents(new InventoryClick(this), this);
+		getServer().getPluginManager().registerEvents(new AnvilStack(this), this);
+
+		if (ItemHandler.getInstance().isUsingModernAPI()) {
+			getServer().getPluginManager().registerEvents(new UpdateItemMeta(this), this);
+		} else { // LEGACY SUPPORT
+			getServer().getPluginManager().registerEvents(new PlayerBucketEmpty(this, itemChangeDelay), this);
+			getServer().getPluginManager().registerEvents(new PlayerItemConsume(this, itemChangeDelay), this);
+			getServer().getPluginManager().registerEvents(new InventoryMoveItem(this), this);
+			getServer().getPluginManager().registerEvents(new FurnaceBurn(), this);
+			getServer().getPluginManager().registerEvents(new PlayerInteract(), this);
+			getServer().getPluginManager().registerEvents(new BlockDispense(), this);
 		}
-
-		closeAdventure();
-	}
-
-	public void reloadMessaging() {
-		closeAdventure();
-
-		if (getConfig().getBoolean("use-mini-message")) {
-			this.adventureAPI = BukkitAudiences.create(this);
-		}
-	}
-
-	public void reloadItemHologramManager() {
-		if (itemHologramManager != null) {
-			itemHologramManager.reload();
-		}
-	}
-
-	private void closeAdventure() {
-		if (this.adventureAPI == null)
-			return;
-
-		this.adventureAPI.close();
-		this.adventureAPI = null;
-	}
-
-	public BukkitAudiences getAdventure() {
-		return this.adventureAPI;
-	}
-
-	public ItemHologramManager getItemHologramManager() {
-		return itemHologramManager;
-	}
-
-	public SettingsManager getSettingsManager() {
-		return settingsManager;
 	}
 
 	public static InventoryStacks getInstance() {

@@ -10,13 +10,14 @@ import com.codingguru.inventorystacks.InventoryStacks;
 public class ConsoleUtil {
 
 	private final static ConsoleCommandSender CONSOLE = Bukkit.getServer().getConsoleSender();
+	private final static InventoryStacks PLUGIN = InventoryStacks.getInstance();
 
 	public static void sendPluginStartSetup() {
 		boolean isUpdateAvailable = new UpdateUtil().hasNewUpdate();
 		CONSOLE.sendMessage(ChatColor.GREEN + "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
 		CONSOLE.sendMessage(ChatColor.GREEN + "Plugin Name: " + ChatColor.YELLOW + "InventoryStacks");
-		CONSOLE.sendMessage(ChatColor.GREEN + "Plugin Version: " + ChatColor.YELLOW
-				+ InventoryStacks.getInstance().getDescription().getVersion());
+		CONSOLE.sendMessage(
+				ChatColor.GREEN + "Plugin Version: " + ChatColor.YELLOW + PLUGIN.getDescription().getVersion());
 		CONSOLE.sendMessage(ChatColor.GREEN + "Server Version: " + ChatColor.YELLOW + Bukkit.getBukkitVersion());
 		CONSOLE.sendMessage(ChatColor.GREEN + "Author: " + ChatColor.YELLOW + "CodingGuru");
 		CONSOLE.sendMessage(ChatColor.GREEN + "Discord: " + ChatColor.YELLOW + "https://discord.gg/CbJxH5NPvX");
@@ -44,12 +45,7 @@ public class ConsoleUtil {
 	}
 
 	public static void debug(String message) {
-		InventoryStacks plugin = InventoryStacks.getInstance();
-
-		if (plugin == null)
-			return;
-
-		if (!plugin.getConfig().getBoolean("debug-mode", false))
+		if (!PLUGIN.getConfig().getBoolean("debug-mode", false))
 			return;
 
 		CONSOLE.sendMessage(ChatColor.GRAY + "[InventoryStacks-Debug] " + ChatColor.WHITE + message);

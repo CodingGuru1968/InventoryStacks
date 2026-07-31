@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.util.VersionUtil;
 
 public class ChangeItemInHandTask extends Schedule {
@@ -14,7 +15,8 @@ public class ChangeItemInHandTask extends Schedule {
 	private final ItemStack item;
 	private final Material material;
 
-	public ChangeItemInHandTask(Player player, ItemStack item, Material material) {
+	public ChangeItemInHandTask(InventoryStacks plugin, Player player, ItemStack item, Material material) {
+		super(plugin);
 		this.player = new WeakReference<Player>(player);
 		this.item = item;
 		this.material = material;

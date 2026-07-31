@@ -5,40 +5,38 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
 import com.codingguru.inventorystacks.InventoryStacks;
-import com.codingguru.inventorystacks.handlers.ItemHandler;
-import com.codingguru.inventorystacks.hooks.WorldGuardHook;
-import com.codingguru.inventorystacks.util.MessagesUtil;
+import com.codingguru.inventorystacks.util.LangDefaults;
+import com.codingguru.inventorystacks.util.MessageBuilder;
 
 public class ReloadCmd implements CommandExecutor {
 
+	private final InventoryStacks plugin;
+
+	public ReloadCmd(InventoryStacks plugin) {
+		this.plugin = plugin;
+	}
+	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length == 0) {
-			MessagesUtil.sendMessage(sender,
-					MessagesUtil.INCORRECT_USAGE.toString().replaceAll("%command%", "/stacks reload"));
+			new MessageBuilder.Builder("incorrect-usage", LangDefaults.INCORRECT_USAGE)
+					.set("%command%", "/stacks reload").send(sender);
 			return false;
 		}
 
 		if (!args[0].equalsIgnoreCase("reload") && !args[0].equalsIgnoreCase("rl")) {
-			MessagesUtil.sendMessage(sender,
-					MessagesUtil.INCORRECT_USAGE.toString().replaceAll("%command%", "/stacks reload"));
+			new MessageBuilder.Builder("incorrect-usage", LangDefaults.INCORRECT_USAGE)
+					.set("%command%", "/stacks reload").send(sender);
 			return false;
 		}
 
 		if (!sender.hasPermission("STACKS.*") && !sender.hasPermission("STACKS.RELOAD")) {
-			MessagesUtil.sendMessage(sender, MessagesUtil.NO_PERMISSION.toString());
+			new MessageBuilder.Builder("no-permission", LangDefaults.NO_PERMISSION).send(sender);
 			return false;
 		}
 
-		InventoryStacks PLUGIN = InventoryStacks.getInstance();
-		
-		PLUGIN.reloadConfig();
-		WorldGuardHook.setupWorldGuard();
-		PLUGIN.getSettingsManager().setup(PLUGIN);
-		PLUGIN.reloadMessaging();
-		PLUGIN.reloadItemHologramManager();
-		ItemHandler.getInstance().reloadInventoryStacks();
-		MessagesUtil.sendMessage(sender, MessagesUtil.RELOAD.toString());
+		plugin.reload();
+		new MessageBuilder.Builder("reload", LangDefaults.RELOAD).send(sender);
 		return false;
 	}
 }

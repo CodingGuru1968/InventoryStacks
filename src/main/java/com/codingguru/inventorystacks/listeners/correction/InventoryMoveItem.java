@@ -16,12 +16,18 @@ import com.codingguru.inventorystacks.util.XMaterialUtil;
 
 public class InventoryMoveItem implements Listener {
 
+	private final InventoryStacks plugin;
+
+	public InventoryMoveItem(InventoryStacks plugin) {
+		this.plugin = plugin;
+	}
+
 	@EventHandler(ignoreCancelled = true)
 	public void onInventoryMoveItem(InventoryMoveItemEvent e) {
 		if (VersionUtil.v1_20.isServerVersionHigher() && !ItemHandler.getInstance().useLegacyReflection())
 			return;
-		
-		if (!InventoryStacks.getInstance().getConfig().getBoolean("one-potion-per-slot"))
+
+		if (!plugin.getConfig().getBoolean("one-potion-per-slot"))
 			return;
 
 		if (e.getDestination().getType() != InventoryType.BREWING)
@@ -50,7 +56,7 @@ public class InventoryMoveItem implements Listener {
 		ItemStack one = it.clone();
 		one.setAmount(1);
 
-		FixBrewingStandTask task = new FixBrewingStandTask(destination, e.getSource(), one);
+		FixBrewingStandTask task = new FixBrewingStandTask(plugin, destination, e.getSource(), one);
 		task.runTaskLater(1L);
 	}
 
@@ -65,7 +71,8 @@ public class InventoryMoveItem implements Listener {
 
 	private boolean isAnyPotion(ItemStack item) {
 		Material t = item.getType();
-		return t == Material.POTION || (XMaterialUtil.matchXMaterial("SPLASH_POTION").map(XMaterialUtil::get).orElse(null) == t)
+		return t == Material.POTION
+				|| (XMaterialUtil.matchXMaterial("SPLASH_POTION").map(XMaterialUtil::get).orElse(null) == t)
 				|| (XMaterialUtil.matchXMaterial("LINGERING_POTION").map(XMaterialUtil::get).orElse(null) == t);
 	}
 

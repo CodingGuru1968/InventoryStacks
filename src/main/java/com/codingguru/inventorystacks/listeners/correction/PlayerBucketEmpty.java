@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
+import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.scheduler.ChangeItemInHandTask;
 import com.codingguru.inventorystacks.scheduler.ChangeItemInHandWithItemTask;
@@ -20,8 +21,10 @@ import com.codingguru.inventorystacks.util.XMaterialUtil;
 public class PlayerBucketEmpty implements Listener {
 
 	private final long itemChangeDelay;
+	private final InventoryStacks plugin;
 
-	public PlayerBucketEmpty(long itemChangeDelay) {
+	public PlayerBucketEmpty(InventoryStacks plugin, long itemChangeDelay) {
+		this.plugin = plugin;
 		this.itemChangeDelay = itemChangeDelay;
 	}
 
@@ -49,11 +52,11 @@ public class PlayerBucketEmpty implements Listener {
 		clone.setAmount(amount - 1);
 
 		if (!VersionUtil.v1_21.isServerVersionHigher()) {
-			ChangeItemInHandWithItemTask changeItemTask = new ChangeItemInHandWithItemTask(e.getPlayer(), clone,
+			ChangeItemInHandWithItemTask changeItemTask = new ChangeItemInHandWithItemTask(plugin, e.getPlayer(), clone,
 					new ItemStack(XMaterialUtil.BUCKET.get()), XMaterialUtil.BUCKET.get());
 			changeItemTask.runTaskLater(itemChangeDelay);
 		} else {
-			ChangeItemInHandTask changeItemTask = new ChangeItemInHandTask(e.getPlayer(), clone,
+			ChangeItemInHandTask changeItemTask = new ChangeItemInHandTask(plugin, e.getPlayer(), clone,
 					XMaterialUtil.BUCKET.get());
 			changeItemTask.runTaskLater(itemChangeDelay);
 		}
@@ -89,7 +92,7 @@ public class PlayerBucketEmpty implements Listener {
 		ItemStack remaining = holding.clone();
 		remaining.setAmount(amount - 1);
 
-		ChangeItemInHandWithItemTask task = new ChangeItemInHandWithItemTask(player, remaining,
+		ChangeItemInHandWithItemTask task = new ChangeItemInHandWithItemTask(plugin, player, remaining,
 				new ItemStack(Material.BUCKET), XMaterialUtil.BUCKET.get());
 		task.runTaskLater(itemChangeDelay);
 	}

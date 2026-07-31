@@ -14,6 +14,7 @@ import com.codingguru.inventorystacks.handlers.ItemHandler;
 public final class ReflectionLegacyUtil {
 
 	private final static VersionUtil SERVER_VERSION = ItemHandler.getInstance().getServerVersion();
+	private final static InventoryStacks PLUGIN = InventoryStacks.getInstance();
 
 	private static Field legacyMaxStackField;
 
@@ -97,7 +98,7 @@ public final class ReflectionLegacyUtil {
 		} catch (Throwable t) {
 			ConsoleUtil.warning(ChatColor.RED + "Unable to setup reflection values. Disabling plugin...");
 			t.printStackTrace();
-			Bukkit.getPluginManager().disablePlugin(InventoryStacks.getInstance());
+			Bukkit.getPluginManager().disablePlugin(PLUGIN);
 		}
 	}
 

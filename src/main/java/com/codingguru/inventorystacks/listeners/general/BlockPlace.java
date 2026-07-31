@@ -8,14 +8,17 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
+import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.scheduler.ChangeItemInHandWithItemTask;
 import com.codingguru.inventorystacks.util.XMaterialUtil;
 
 public class BlockPlace implements Listener {
 
 	private final long itemChangeDelay;
+	private final InventoryStacks plugin;
 
-	public BlockPlace(long itemChangeDelay) {
+	public BlockPlace(InventoryStacks plugin, long itemChangeDelay) {
+		this.plugin = plugin;
 		this.itemChangeDelay = itemChangeDelay;
 	}
 
@@ -41,7 +44,7 @@ public class BlockPlace implements Listener {
 		ItemStack clone = holding.clone();
 		clone.setAmount(amount - 1);
 
-		ChangeItemInHandWithItemTask changeItemTask = new ChangeItemInHandWithItemTask(e.getPlayer(), clone,
+		ChangeItemInHandWithItemTask changeItemTask = new ChangeItemInHandWithItemTask(plugin, e.getPlayer(), clone,
 				new ItemStack(XMaterialUtil.BUCKET.get()), XMaterialUtil.BUCKET.get());
 		changeItemTask.runTaskLater(itemChangeDelay);
 	}

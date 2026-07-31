@@ -19,18 +19,25 @@ import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.handlers.ItemHandler;
 import com.codingguru.inventorystacks.scheduler.InventoryUpdateTask;
 import com.codingguru.inventorystacks.util.ItemUtil;
-import com.codingguru.inventorystacks.util.MessagesUtil;
+import com.codingguru.inventorystacks.util.LangDefaults;
+import com.codingguru.inventorystacks.util.MessageBuilder;
 import com.codingguru.inventorystacks.util.VersionUtil;
 import com.codingguru.inventorystacks.util.XMaterialUtil;
 
 public class InventoryClick implements Listener {
 
+	private final InventoryStacks plugin;
+
+	public InventoryClick(InventoryStacks plugin) {
+		this.plugin = plugin;
+	}
+
 	@EventHandler(ignoreCancelled = true)
 	public void onBrewingStandShiftMove(InventoryClickEvent e) {
 		if (VersionUtil.v1_20.isServerVersionHigher() && !ItemHandler.getInstance().useLegacyReflection())
 			return;
-		
-		if (!InventoryStacks.getInstance().getConfig().getBoolean("one-potion-per-slot"))
+
+		if (!plugin.getConfig().getBoolean("one-potion-per-slot"))
 			return;
 
 		if (!(e.getInventory() instanceof BrewerInventory))
@@ -92,7 +99,7 @@ public class InventoryClick implements Listener {
 		if (VersionUtil.v1_18_R1.isServerVersionHigher() && !ItemHandler.getInstance().useLegacyReflection())
 			return;
 
-		if (!InventoryStacks.getInstance().getConfig().getBoolean("update-inventory-on-merge"))
+		if (!plugin.getConfig().getBoolean("update-inventory-on-merge"))
 			return;
 
 		if (e.getClick() != ClickType.SHIFT_LEFT && e.getClick() != ClickType.SHIFT_RIGHT
@@ -102,7 +109,7 @@ public class InventoryClick implements Listener {
 		if (!ItemHandler.getInstance().hasEditedStackSize(e.getCurrentItem().getType()))
 			return;
 
-		InventoryUpdateTask updateInventoryTask = new InventoryUpdateTask((Player) e.getWhoClicked());
+		InventoryUpdateTask updateInventoryTask = new InventoryUpdateTask(plugin, (Player) e.getWhoClicked());
 		updateInventoryTask.runTaskLater(2L);
 	}
 
@@ -142,7 +149,7 @@ public class InventoryClick implements Listener {
 		if (VersionUtil.v1_17_R1.isServerVersionHigher() && !ItemHandler.getInstance().useLegacyReflection())
 			return;
 
-		if (!InventoryStacks.getInstance().getConfig().getBoolean("prevent-shift-damageable-items-stack"))
+		if (!plugin.getConfig().getBoolean("prevent-shift-damageable-items-stack"))
 			return;
 
 		if (!e.isShiftClick())
@@ -169,8 +176,8 @@ public class InventoryClick implements Listener {
 		if (hasDamagedMergeTarget(playerInv, moving)
 				|| (clickedInv != null && clickedInv != playerInv && hasDamagedMergeTarget(clickedInv, moving))) {
 			e.setCancelled(true);
-			MessagesUtil.sendMessage(e.getWhoClicked(),
-					MessagesUtil.PREVENT_SHIFT_COMBINING_DAMAGEABLE_ITEMS.toString());
+			new MessageBuilder.Builder("prevent-shift-combining-damageable-items",
+					LangDefaults.PREVENT_SHIFT_COMBINING_DAMAGEABLE_ITEMS).send(e.getWhoClicked());
 		}
 	}
 

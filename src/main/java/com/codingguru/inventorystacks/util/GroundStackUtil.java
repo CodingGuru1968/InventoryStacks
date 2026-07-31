@@ -11,6 +11,7 @@ import com.codingguru.inventorystacks.InventoryStacks;
 public final class GroundStackUtil {
 
 	private static NamespacedKey groundStackTotalKey;
+	private final static InventoryStacks PLUGIN = InventoryStacks.getInstance();
 
 	private GroundStackUtil() {
 	}
@@ -71,7 +72,7 @@ public final class GroundStackUtil {
 
 	private static NamespacedKey getGroundStackTotalKey() {
 		if (groundStackTotalKey == null) {
-			groundStackTotalKey = new NamespacedKey(InventoryStacks.getInstance(), "ground_stack_total");
+			groundStackTotalKey = new NamespacedKey(PLUGIN, "ground_stack_total");
 		}
 
 		return groundStackTotalKey;
