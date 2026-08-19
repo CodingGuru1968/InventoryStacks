@@ -13,15 +13,12 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
 
+import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.api.PluginManager;
-import com.codingguru.inventorystacks.handlers.ItemHandler;
+import com.codingguru.inventorystacks.scheduler.Schedule;
 import com.codingguru.inventorystacks.util.GroundStackUtil;
-import com.codingguru.inventorystacks.util.ServerTypeUtil;
 
-import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 public class ItemHologramManager implements PluginManager {
@@ -31,10 +28,9 @@ public class ItemHologramManager implements PluginManager {
 	private static final LegacyComponentSerializer LEGACY_SECTION = LegacyComponentSerializer.legacySection();
 	private static final Method COMPONENT_CUSTOM_NAME_METHOD = resolveComponentCustomNameMethod();
 
-	private final Plugin plugin;
+	private final InventoryStacks plugin;
 	private final Map<UUID, UUID> itemToHologram = new ConcurrentHashMap<>();
-	private BukkitTask bukkitTask;
-	private ScheduledTask foliaTask;
+	private Schedule schedule;
 	private boolean enabled;
 	private long updateIntervalTicks;
 	private double yOffset;
@@ -42,7 +38,7 @@ public class ItemHologramManager implements PluginManager {
 	private int despawnTicks;
 	private String format;
 
-	public ItemHologramManager(Plugin plugin) {
+	public ItemHologramManager(InventoryStacks plugin) {
 		this.plugin = plugin;
 	}
 
@@ -60,7 +56,11 @@ public class ItemHologramManager implements PluginManager {
 
 	@Override
 	public void stop() {
-		stopTask();
+		if (schedule != null) {
+			this.schedule.cancel();
+			this.schedule = null;
+		}
+
 		clearAll();
 	}
 
@@ -109,25 +109,14 @@ public class ItemHologramManager implements PluginManager {
 	}
 
 	private void startTask() {
-		if (ItemHandler.getInstance().getServerType() == ServerTypeUtil.FOLIA) {
-			foliaTask = Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, task -> updateAll(),
-					updateIntervalTicks, updateIntervalTicks);
-		} else {
-			bukkitTask = Bukkit.getScheduler().runTaskTimer(plugin, this::updateAll, updateIntervalTicks,
-					updateIntervalTicks);
-		}
-	}
+		this.schedule = new Schedule(plugin) {
+			@Override
+			public void run() {
+				updateAll();
+			}
+		};
 
-	private void stopTask() {
-		if (bukkitTask != null) {
-			bukkitTask.cancel();
-			bukkitTask = null;
-		}
-
-		if (foliaTask != null) {
-			foliaTask.cancel();
-			foliaTask = null;
-		}
+		this.schedule.runTaskTimer(updateIntervalTicks, updateIntervalTicks);
 	}
 
 	private void updateAll() {
