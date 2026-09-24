@@ -43,7 +43,7 @@ public class ItemHandler {
 	private ServerTypeUtil serverType;
 	private StackSizeApplier applier;
 	private boolean useLegacyReflection;
-	
+
 	private ItemHandler() {
 	}
 
@@ -63,7 +63,7 @@ public class ItemHandler {
 		}
 
 		setupServerType();
-		
+
 		useLegacyReflection = PLUGIN.getConfig().getBoolean("use-legacy-reflection", false);
 
 		this.applier = StackSizeApplierUtil.create();
@@ -108,7 +108,8 @@ public class ItemHandler {
 		String majorMinor = parts[0] + "." + parts[1];
 
 		if (versionFound.equalsIgnoreCase("craftbukkit")) {
-			if (majorMinor.equals("26.2") || majorMinor.equals("26.1") || majorMinor.equals("1.26")) {
+			if (majorMinor.equals("26.3") || majorMinor.equals("26.2") || majorMinor.equals("26.1")
+					|| majorMinor.equals("1.26")) {
 				serverVersion = VersionUtil.v1_26;
 				return true;
 			}
@@ -578,7 +579,7 @@ public class ItemHandler {
 	public ServerTypeUtil getServerType() {
 		return serverType;
 	}
-	
+
 	public boolean useLegacyReflection() {
 		return useLegacyReflection;
 	}
