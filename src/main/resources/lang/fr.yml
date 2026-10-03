@@ -3,6 +3,8 @@ hand-items-stacked: "&aVous avez empilé avec succès tous les objets dans votre
 all-items-stacked: "&aVous avez empilé avec succès tous les objets de votre inventaire."
 invalid-stack-type: "&c%type% n'est pas un type d'empilement valide. Utilisez 'HAND' ou 'ALL'."
 disallow-anvil-stack: "&cVous ne pouvez pas utiliser cet objet empilé ici."
+disallow-smithing-stack-damageable: "&cVous ne pouvez pas utiliser cet objet empilé ici."
+disallow-smithing-stack-64: "&cVous ne pouvez pas utiliser ici une pile de plus de 64 objets."
 prevent-shift-combining-damageable-items: "&cVous ne pouvez pas combiner cet objet AVEC SHIFT en raison d'un bug de durabilité."
 command-disabled: "&cCette commande a été désactivée."
 bundle-fix: "&cVous ne pouvez pas placer d'objets endommageables empilés dans des bundles en raison de limitations client."

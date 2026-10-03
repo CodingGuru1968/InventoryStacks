@@ -18,6 +18,7 @@ import com.codingguru.inventorystacks.listeners.correction.InventoryMoveItem;
 import com.codingguru.inventorystacks.listeners.correction.PlayerBucketEmpty;
 import com.codingguru.inventorystacks.listeners.correction.PlayerInteract;
 import com.codingguru.inventorystacks.listeners.correction.PlayerItemConsume;
+import com.codingguru.inventorystacks.listeners.correction.SmithingTableFix;
 import com.codingguru.inventorystacks.listeners.general.AnvilStack;
 import com.codingguru.inventorystacks.listeners.general.BlockPlace;
 import com.codingguru.inventorystacks.listeners.general.Commands;
@@ -99,6 +100,7 @@ public class InventoryStacks extends JavaPlugin {
 
 		if (ItemHandler.getInstance().isUsingModernAPI()) {
 			getServer().getPluginManager().registerEvents(new UpdateItemMeta(this), this);
+			getServer().getPluginManager().registerEvents(new SmithingTableFix(this), this);
 		} else { // LEGACY SUPPORT
 			getServer().getPluginManager().registerEvents(new PlayerBucketEmpty(this, itemChangeDelay), this);
 			getServer().getPluginManager().registerEvents(new PlayerItemConsume(this, itemChangeDelay), this);

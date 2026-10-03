@@ -10,6 +10,8 @@ public final class LangDefaults {
     public static final String ALL_ITEMS_STACKED = "&aYou have successfully stacked all items in your inventory.";
     public static final String INVALID_STACK_TYPE = "&c%type% is not a valid stack type. Use 'HAND' or 'ALL'.";
     public static final String DISALLOW_ANVIL_STACK = "&cYou cannot use this stacked item here.";
+    public static final String DISALLOW_SMITHING_STACK_DAMAGEABLE = "&cYou cannot use this stacked item here.";
+    public static final String DISALLOW_SMITHING_STACK_64 = "&cYou cannot use a stack greater than 64 here.";
     public static final String PREVENT_SHIFT_COMBINING_DAMAGEABLE_ITEMS = "&cYou cannot combine this item WITH SHIFT due to a durability item glitch.";
     public static final String COMMAND_DISABLED = "&cThis command has been disabled.";
     public static final String BUNDLE_FIX = "&cYou cannot put stacked damageable items into bundles due to client limitations.";
