@@ -18,6 +18,7 @@ import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
+import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -57,12 +58,18 @@ public class UpdateItemMeta implements Listener {
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+	public void onPrepareItemCraft(PrepareItemCraftEvent e) {
+		Location loc = WorldGuardHook.isEnabled() ? WorldGuardHook.getLocationFromInventory(e.getInventory()) : null;
+		callNow(null, loc, e.getInventory().getResult());
+	}
+
+	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onInventoryMove(InventoryMoveItemEvent e) {
 		if (!WorldGuardHook.isEnabled()) {
 			callNow(null, null, e.getItem());
 			return;
 		}
-	
+
 		if (!plugin.getConfig().getBoolean("worldguard.hopper-support", false))
 			return;
 
