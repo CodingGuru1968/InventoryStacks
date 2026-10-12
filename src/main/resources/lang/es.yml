@@ -5,6 +5,7 @@ invalid-stack-type: "&c%type% no es un tipo de apilamiento válido. Usa 'HAND' o
 disallow-anvil-stack: "&cNo puedes usar este objeto apilado aquí."
 disallow-smithing-stack-damageable: "&cNo puedes usar este objeto apilado aquí."
 disallow-smithing-stack-64: "&cNo puedes usar aquí un montón de más de 64 objetos."
+disallow-shulker-stack-damageable: "&cNo puedes usar este objeto apilado aquí."
 prevent-shift-combining-damageable-items: "&cNo puedes combinar este ítem CON SHIFT debido a un fallo de durabilidad."
 command-disabled: "&cEste comando ha sido deshabilitado."
 bundle-fix: "&cNo puedes poner ítems apilados con durabilidad en los bultos debido a limitaciones del cliente."
