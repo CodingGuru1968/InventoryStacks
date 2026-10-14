@@ -33,12 +33,10 @@ public class ItemHandler {
 
 	private static final ItemHandler INSTANCE = new ItemHandler();
 	private final static InventoryStacks PLUGIN = InventoryStacks.getInstance();
-
 	private final Map<XMaterialUtil, Integer> cachedDefaultStackSizes = Maps.newHashMap();
 	private final Map<XMaterialUtil, Integer> cachedUpdatedStackSizes = Maps.newHashMap();
 	private final Map<Material, Integer> cachedUpdatedDirectMaterialSizes = Maps.newHashMap();
 	private final Set<String> loggedUnsupportedMaterials = new HashSet<>();
-
 	private VersionUtil serverVersion;
 	private ServerTypeUtil serverType;
 	private StackSizeApplier applier;
@@ -303,6 +301,7 @@ public class ItemHandler {
 
 					cacheMaterialStackSize(directMaterial, size);
 					applier.applyItem(true, new ItemStack(directMaterial), size);
+
 					ConsoleUtil.info(ChatColor.YELLOW + "Successfully set " + directMaterial.name() + " stack size to: "
 							+ size + " (direct Material fallback)");
 					continue;
@@ -513,7 +512,7 @@ public class ItemHandler {
 
 			cacheMaterialStackSize(xMat, stackSize, mat.getMaxStackSize());
 			applier.applyItem(true, xMat.parseItem(), stackSize);
-			ConsoleUtil.info(ChatColor.YELLOW + "Successfully set " + mat.name() + " stack size to: " + stackSize);
+			ConsoleUtil.debug(ChatColor.YELLOW + "Successfully set " + mat.name() + " stack size to: " + stackSize);
 		}
 
 		for (Material mat : Material.values()) {
@@ -528,9 +527,11 @@ public class ItemHandler {
 
 			cacheMaterialStackSize(mat, stackSize);
 			applier.applyItem(true, new ItemStack(mat), stackSize);
-			ConsoleUtil.info(ChatColor.YELLOW + "Successfully set " + mat.name() + " stack size to: " + stackSize
+			ConsoleUtil.debug(ChatColor.YELLOW + "Successfully set " + mat.name() + " stack size to: " + stackSize
 					+ " (direct Material fallback)");
 		}
+
+		ConsoleUtil.debug(ChatColor.YELLOW + "Successfully set ALL stack sizes to: " + stackSize);
 	}
 
 	public boolean isItem(Material mat) {
