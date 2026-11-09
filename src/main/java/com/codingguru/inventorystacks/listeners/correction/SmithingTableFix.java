@@ -19,6 +19,7 @@ import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.scheduler.Schedule;
 import com.codingguru.inventorystacks.util.LangDefaults;
 import com.codingguru.inventorystacks.util.MessageBuilder;
+import com.codingguru.inventorystacks.util.VersionUtil;
 
 public class SmithingTableFix implements Listener {
 
@@ -31,6 +32,9 @@ public class SmithingTableFix implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onInventoryClick(InventoryClickEvent e) {
+		if (!VersionUtil.v1_14_R1.isServerVersionHigher())
+			return;	
+
 		InventoryView view = e.getView();
 
 		if (view.getTopInventory().getType() != InventoryType.SMITHING)
@@ -108,6 +112,9 @@ public class SmithingTableFix implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onInventoryDrag(InventoryDragEvent e) {
+		if (!VersionUtil.v1_14_R1.isServerVersionHigher())
+			return;	
+		
 		InventoryView view = e.getView();
 
 		if (view.getTopInventory().getType() != InventoryType.SMITHING)
@@ -203,9 +210,9 @@ public class SmithingTableFix implements Listener {
 		return hasCustomStackSize(item) && isDamageable(item) && item.getAmount() > 1;
 	}
 
-	private boolean isDamageable(ItemStack item) {
-		return item != null && item.getType().getMaxDurability() > 0;
-	}
+    private boolean isDamageable(ItemStack item) {
+        return item != null && item.getType().getMaxDurability() > 0;
+    }
 
 	private void sendDisallowMessageDamageable(HumanEntity entity) {
 		new MessageBuilder.Builder("disallow-smithing-stack-damageable",

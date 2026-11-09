@@ -1,4 +1,3 @@
-
 package com.codingguru.inventorystacks.listeners.correction;
 
 import org.bukkit.Material;
@@ -7,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
@@ -19,195 +19,220 @@ import com.codingguru.inventorystacks.InventoryStacks;
 import com.codingguru.inventorystacks.scheduler.Schedule;
 import com.codingguru.inventorystacks.util.LangDefaults;
 import com.codingguru.inventorystacks.util.MessageBuilder;
+import com.codingguru.inventorystacks.util.VersionUtil;
 
 public class ShulkerBoxFix implements Listener {
 
-    private final InventoryStacks plugin;
+	private final InventoryStacks plugin;
 
-    public ShulkerBoxFix(InventoryStacks plugin) {
-        this.plugin = plugin;
-    }
+	public ShulkerBoxFix(InventoryStacks plugin) {
+		this.plugin = plugin;
+	}
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onInventoryOpen(InventoryOpenEvent e) {
-        Inventory inventory = e.getInventory();
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	public void onInventoryOpen(InventoryOpenEvent e) {
+		if (!VersionUtil.v1_11_R1.isServerVersionHigher())
+			return;
 
-        if (inventory.getType() != InventoryType.SHULKER_BOX)
-            return;
+		Inventory inventory = e.getInventory();
 
-        scheduleFix(inventory);
-    }
+		if (inventory.getType() != InventoryType.SHULKER_BOX)
+			return;
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onInventoryClick(InventoryClickEvent e) {
-        Inventory inventory = e.getView().getTopInventory();
+		scheduleFix(inventory);
+	}
 
-        if (inventory.getType() != InventoryType.SHULKER_BOX)
-            return;
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	public void onInventoryClick(InventoryClickEvent e) {
+		if (!VersionUtil.v1_11_R1.isServerVersionHigher())
+			return;
 
-        if (isMovingIntoShulker(e)) {
-            ItemStack movingItem = getMovingItem(e);
+		Inventory inventory = e.getView().getTopInventory();
 
-            if (isInvalidStackedDamageable(movingItem)) {
-                sendDisallowMessage(e.getWhoClicked());
-                e.setCancelled(true);
-                return;
-            }
+		if (inventory.getType() != InventoryType.SHULKER_BOX)
+			return;
 
-            if (hasCustomStackSize(movingItem) && isDamageable(movingItem)) {
-                removeMaxStackSize(movingItem);
-                return;
-            }
-        }
+		if (isMovingIntoShulker(e)) {
+			ItemStack movingItem = getMovingItem(e);
 
-        scheduleFix(inventory);
-    }
+			if (isInvalidStackedDamageable(movingItem)) {
+				sendDisallowMessage(e.getWhoClicked());
+				e.setCancelled(true);
+				return;
+			}
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onInventoryDrag(InventoryDragEvent e) {
-        Inventory inventory = e.getView().getTopInventory();
+			if (hasCustomStackSize(movingItem) && isDamageable(movingItem)) {
+				removeMaxStackSize(movingItem);
+				return;
+			}
+		}
 
-        if (inventory.getType() != InventoryType.SHULKER_BOX)
-            return;
+		scheduleFix(inventory);
+	}
 
-        boolean movingIntoShulker = false;
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	public void onInventoryDrag(InventoryDragEvent e) {
+		if (!VersionUtil.v1_11_R1.isServerVersionHigher())
+			return;
 
-        for (Integer rawSlot : e.getRawSlots()) {
-            if (rawSlot >= 0 && rawSlot < inventory.getSize()) {
-                movingIntoShulker = true;
-                break;
-            }
-        }
+		Inventory inventory = e.getView().getTopInventory();
 
-        if (!movingIntoShulker)
-            return;
+		if (inventory.getType() != InventoryType.SHULKER_BOX)
+			return;
 
-        ItemStack cursor = e.getOldCursor();
+		boolean movingIntoShulker = false;
 
-        if (isInvalidStackedDamageable(cursor)) {
-            sendDisallowMessage(e.getWhoClicked());
-            e.setCancelled(true);
-            return;
-        }
+		for (Integer rawSlot : e.getRawSlots()) {
+			if (rawSlot >= 0 && rawSlot < inventory.getSize()) {
+				movingIntoShulker = true;
+				break;
+			}
+		}
 
-        if (hasCustomStackSize(cursor) && isDamageable(cursor)) {
-            for (ItemStack item : e.getNewItems().values())
-                removeMaxStackSize(item);
+		if (!movingIntoShulker)
+			return;
 
-            ItemStack newCursor = e.getCursor();
+		ItemStack cursor = e.getOldCursor();
 
-            if (newCursor != null)
-                removeMaxStackSize(newCursor);
+		if (isInvalidStackedDamageable(cursor)) {
+			sendDisallowMessage(e.getWhoClicked());
+			e.setCancelled(true);
+			return;
+		}
 
-            return;
-        }
+		if (hasCustomStackSize(cursor) && isDamageable(cursor)) {
+			for (ItemStack item : e.getNewItems().values())
+				removeMaxStackSize(item);
 
-        scheduleFix(inventory);
-    }
+			ItemStack newCursor = e.getCursor();
 
-    private boolean isMovingIntoShulker(InventoryClickEvent e) {
-        if (e.getClickedInventory() == null)
-            return false;
+			if (newCursor != null)
+				removeMaxStackSize(newCursor);
 
-        if (e.getClickedInventory() == e.getView().getTopInventory())
-            return false;
+			return;
+		}
 
-        return e.getClickedInventory() == e.getView().getBottomInventory();
-    }
+		scheduleFix(inventory);
+	}
 
-    @SuppressWarnings("removal")
-    private ItemStack getMovingItem(InventoryClickEvent e) {
-        switch (e.getAction()) {
-        case PLACE_ALL:
-        case PLACE_ONE:
-        case PLACE_SOME:
-        case SWAP_WITH_CURSOR:
-            return e.getCursor();
+	@SuppressWarnings("removal")
+	private boolean isMovingIntoShulker(InventoryClickEvent e) {
+		if (e.getClickedInventory() == null)
+			return false;
 
-        case HOTBAR_SWAP:
-        case HOTBAR_MOVE_AND_READD:
-            int button = e.getHotbarButton();
+		Inventory clicked = e.getClickedInventory();
+		Inventory top = e.getView().getTopInventory();
 
-            if (button >= 0)
-                return e.getWhoClicked().getInventory().getItem(button);
+		if (clicked == top) {
+			switch (e.getAction()) {
+			case PLACE_ALL:
+			case PLACE_ONE:
+			case PLACE_SOME:
+			case SWAP_WITH_CURSOR:
+			case HOTBAR_SWAP:
+			case HOTBAR_MOVE_AND_READD:
+				return true;
+			default:
+				return false;
+			}
+		}
 
-            return e.getWhoClicked().getInventory().getItemInOffHand();
+		return clicked == e.getView().getBottomInventory() && e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY;
+	}
 
-        case MOVE_TO_OTHER_INVENTORY:
-            return e.getCurrentItem();
+	@SuppressWarnings("removal")
+	private ItemStack getMovingItem(InventoryClickEvent e) {
+		switch (e.getAction()) {
+		case PLACE_ALL:
+		case PLACE_ONE:
+		case PLACE_SOME:
+		case SWAP_WITH_CURSOR:
+			return e.getCursor();
 
-        default:
-            return null;
-        }
-    }
+		case HOTBAR_SWAP:
+		case HOTBAR_MOVE_AND_READD:
+			int button = e.getHotbarButton();
 
-    private boolean isInvalidStackedDamageable(ItemStack item) {
-        return hasCustomStackSize(item) && isDamageable(item) && item.getAmount() > 1;
-    }
+			if (button >= 0)
+				return e.getWhoClicked().getInventory().getItem(button);
 
-    private boolean hasCustomStackSize(ItemStack item) {
-        if (item == null || !item.hasItemMeta())
-            return false;
+			return e.getWhoClicked().getInventory().getItemInOffHand();
 
-        ItemMeta meta = item.getItemMeta();
-        return meta.hasMaxStackSize() && meta.getMaxStackSize() > 1;
-    }
+		case MOVE_TO_OTHER_INVENTORY:
+			return e.getCurrentItem();
 
-    private boolean isDamageable(ItemStack item) {
-        return item != null && item.getType().getMaxDurability() > 0;
-    }
+		default:
+			return null;
+		}
+	}
 
-    private void sendDisallowMessage(HumanEntity entity) {
-        new MessageBuilder.Builder("disallow-shulker-stack-damageable",
-                LangDefaults.DISALLOW_SHULKER_STACK_DAMAGEABLE).send(entity);
-    }
+	private boolean isInvalidStackedDamageable(ItemStack item) {
+		return hasCustomStackSize(item) && isDamageable(item) && item.getAmount() > 1;
+	}
 
-    private void removeMaxStackSize(ItemStack item) {
-        if (item == null)
-            return;
+	private boolean hasCustomStackSize(ItemStack item) {
+		if (item == null || !item.hasItemMeta())
+			return false;
 
-        ItemMeta meta = item.getItemMeta();
+		ItemMeta meta = item.getItemMeta();
+		return meta.hasMaxStackSize() && meta.getMaxStackSize() > 1;
+	}
 
-        if (meta == null || !meta.hasMaxStackSize())
-            return;
+	private boolean isDamageable(ItemStack item) {
+		return item != null && item.getType().getMaxDurability() > 0;
+	}
 
-        meta.setMaxStackSize(null);
-        item.setItemMeta(meta);
-    }
+	private void sendDisallowMessage(HumanEntity entity) {
+		new MessageBuilder.Builder("disallow-shulker-stack-damageable", LangDefaults.DISALLOW_SHULKER_STACK_DAMAGEABLE)
+				.send(entity);
+	}
 
-    private void scheduleFix(Inventory inventory) {
-        new Schedule(plugin) {
-            @Override
-            public void run() {
-                boolean changed = false;
+	private void removeMaxStackSize(ItemStack item) {
+		if (item == null)
+			return;
 
-                for (int slot = 0; slot < inventory.getSize(); slot++) {
-                    ItemStack item = inventory.getItem(slot);
+		ItemMeta meta = item.getItemMeta();
 
-                    if (item == null || item.getType() == Material.AIR)
-                        continue;
+		if (meta == null || !meta.hasMaxStackSize())
+			return;
 
-                    if (!hasCustomStackSize(item) || !isDamageable(item))
-                        continue;
+		meta.setMaxStackSize(null);
+		item.setItemMeta(meta);
+	}
 
-                    if (item.getAmount() > 1)
-                        continue;
+	private void scheduleFix(Inventory inventory) {
+		new Schedule(plugin) {
+			@Override
+			public void run() {
+				boolean changed = false;
 
-                    removeMaxStackSize(item);
-                    inventory.setItem(slot, item);
-                    changed = true;
-                }
+				for (int slot = 0; slot < inventory.getSize(); slot++) {
+					ItemStack item = inventory.getItem(slot);
 
-                if (changed)
-                    updateViewers(inventory);
-            }
-        }.runTask();
-    }
+					if (item == null || item.getType() == Material.AIR)
+						continue;
 
-    private void updateViewers(Inventory inventory) {
-        for (HumanEntity viewer : inventory.getViewers()) {
-            if (viewer instanceof Player)
-                ((Player) viewer).updateInventory();
-        }
-    }
+					if (!hasCustomStackSize(item) || !isDamageable(item))
+						continue;
+
+					if (item.getAmount() > 1)
+						continue;
+
+					removeMaxStackSize(item);
+					inventory.setItem(slot, item);
+					changed = true;
+				}
+
+				if (changed)
+					updateViewers(inventory);
+			}
+		}.runTask();
+	}
+
+	private void updateViewers(Inventory inventory) {
+		for (HumanEntity viewer : inventory.getViewers()) {
+			if (viewer instanceof Player)
+				((Player) viewer).updateInventory();
+		}
+	}
 }

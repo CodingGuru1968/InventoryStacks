@@ -531,7 +531,7 @@ public class ItemHandler {
 					+ " (direct Material fallback)");
 		}
 
-		ConsoleUtil.debug(ChatColor.YELLOW + "Successfully set ALL stack sizes to: " + stackSize);
+		ConsoleUtil.info(ChatColor.YELLOW + "Successfully set ALL stack sizes to: " + stackSize);
 	}
 
 	public boolean isItem(Material mat) {

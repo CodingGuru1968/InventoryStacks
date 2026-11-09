@@ -98,11 +98,11 @@ public class InventoryStacks extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(new BundleFix(), this);
 		getServer().getPluginManager().registerEvents(new InventoryClick(this), this);
 		getServer().getPluginManager().registerEvents(new AnvilStack(this), this);
-
+		getServer().getPluginManager().registerEvents(new SmithingTableFix(this), this);
+		getServer().getPluginManager().registerEvents(new ShulkerBoxFix(this), this);
+		
 		if (ItemHandler.getInstance().isUsingModernAPI()) {
 			getServer().getPluginManager().registerEvents(new UpdateItemMeta(this), this);
-			getServer().getPluginManager().registerEvents(new SmithingTableFix(this), this);
-			getServer().getPluginManager().registerEvents(new ShulkerBoxFix(this), this);
 		} else { // LEGACY SUPPORT
 			getServer().getPluginManager().registerEvents(new PlayerBucketEmpty(this, itemChangeDelay), this);
 			getServer().getPluginManager().registerEvents(new PlayerItemConsume(this, itemChangeDelay), this);
